@@ -13,6 +13,7 @@ public class IntListExercises {
         while (head.rest != null) {
             head.first += c;
             head = head.rest;
+            if(head.rest == null) head.first += c;
         }
     }
 
@@ -54,7 +55,7 @@ public class IntListExercises {
         while (x > 10) {
             x = x / 10;
         }
-        int firstDigit = x % 10;
+        int firstDigit = x;
         return firstDigit == lastDigit;
     }
 
@@ -77,6 +78,6 @@ public class IntListExercises {
             lst.first *= lst.first;
         }
 
-        return currElemIsPrime || squarePrimes(lst.rest);
+        return squarePrimes(lst.rest) || currElemIsPrime;
     }
 }
