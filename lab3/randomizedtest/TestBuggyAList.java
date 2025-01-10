@@ -23,7 +23,7 @@ public class TestBuggyAList {
     }
     @Test
     public void randomizedTest(){
-        AListNoResizing<Integer> L = new AListNoResizing<>();
+        BuggyAList<Integer> L = new BuggyAList<>();
 
         int N = 5000;
         for (int i = 0; i < N; i += 1) {
