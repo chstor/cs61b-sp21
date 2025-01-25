@@ -7,7 +7,7 @@ import java.util.Iterator;
  * @date : 2025-01-25 15:08
  * @modyified By :
  */
-public class ArrayDeque<T> implements DequeAPI<T> {
+public class ArrayDeque<T> implements Deque<T> {
     private T[] items;
     private int size;
     private int prev;

@@ -7,7 +7,7 @@ import java.util.Iterator;
  * @date : 2025-01-24 16:56
  * @modyified By :
  */
-public class LinkedListDeque<T> implements DequeAPI<T>{
+public class LinkedListDeque<T> implements Deque<T> {
 
     private Node sentinel;
     private int size;

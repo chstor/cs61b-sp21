@@ -7,7 +7,7 @@ import java.util.Iterator;
  * @date : 2025-01-24 16:55
  * @modyified By :
  */
-public interface DequeAPI<T> {
+public interface Deque<T> {
     public void addFirst(T item);
     public void addLast(T item);
     public boolean isEmpty();
