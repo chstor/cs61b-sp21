@@ -7,7 +7,7 @@ import java.util.Iterator;
  * @date : 2025-01-24 16:56
  * @modyified By :
  */
-public class LinkedListDeque<T> implements Deque<T> {
+public class LinkedListDeque<T> implements Deque<T>,Iterable<T> {
 
     private Node sentinel;
     private int size;
@@ -134,8 +134,19 @@ public class LinkedListDeque<T> implements Deque<T> {
         if(index == 0) return sentinel.item;
         return getRecursiveHelper(sentinel.next,index - 1);
     }
-    @Override
     public Iterator<T> iterator() {
         return new LinkedListDequeIterator();
+    }
+    public boolean equals(Object o){
+        if(o == null) return false;
+        if(this.getClass() != o.getClass()) return false;
+        LinkedListDeque<T> other = (LinkedListDeque<T>) o;
+        if(other.size() != this.size()) return false;
+        int i = 0;
+        for(T t : this){
+            if(!t.equals(other.get(i))) return false;
+            i += 1;
+        }
+        return true;
     }
 }

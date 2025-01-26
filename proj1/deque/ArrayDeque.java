@@ -7,7 +7,7 @@ import java.util.Iterator;
  * @date : 2025-01-25 15:08
  * @modyified By :
  */
-public class ArrayDeque<T> implements Deque<T> {
+public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
     private T[] items;
     private int size;
     private int prev;
@@ -105,8 +105,20 @@ public class ArrayDeque<T> implements Deque<T> {
         return items[(prev + index)%items.length];
     }
 
-    @Override
     public Iterator<T> iterator() {
         return new ArrayDequeIterator();
+    }
+
+    public boolean equals(Object o){
+        if(o == null) return false;
+        if(this.getClass() != o.getClass()) return false;
+        ArrayDeque<T> other = (ArrayDeque<T>) o;
+        if(other.size() != this.size()) return false;
+        int i = 0;
+        for(T t : this){
+            if(!t.equals(other.get(i))) return false;
+            i += 1;
+        }
+        return true;
     }
 }
