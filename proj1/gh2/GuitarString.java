@@ -2,12 +2,13 @@ package gh2;
 
 import deque.ArrayDeque;
 import deque.Deque;
-import deque.LinkedListDeque;
 
 public class GuitarString {
-    /** Constants. Do not change. In case you're curious, the keyword final
+    /**
+     * Constants. Do not change. In case you're curious, the keyword final
      * means the values cannot be changed at runtime. We'll discuss this and
-     * other topics in lecture on Friday. */
+     * other topics in lecture on Friday.
+     */
     private static final int SR = 44100;      // Sampling Rate
     private static final double DECAY = .996; // energy decay factor
 
@@ -21,8 +22,8 @@ public class GuitarString {
         //       better accuracy, use the Math.round() function before casting.
         //       Your should initially fill your buffer array with zeros.
         buffer = new ArrayDeque<>();
-        int capacity = (int) Math.round(SR/frequency);
-        for(int i = 0; i < capacity; i += 1) buffer.addLast(0.0);
+        int capacity = (int) Math.round(SR / frequency);
+        for (int i = 0; i < capacity; i += 1) buffer.addLast(0.0);
     }
 
 
@@ -32,7 +33,7 @@ public class GuitarString {
         //       between -0.5 and 0.5. You can get such a number by using:
         //       double r = Math.random() - 0.5;
         //
-        for(int i = 0; i < buffer.size(); i += 1){
+        for (int i = 0; i < buffer.size(); i += 1) {
             buffer.removeFirst();
             buffer.addLast(Math.random() - 0.5);
         }
@@ -49,8 +50,8 @@ public class GuitarString {
         // TODO: Dequeue the front sample and enqueue a new sample that is
         //       the average of the two multiplied by the DECAY factor.
         //       **Do not call StdAudio.play().**
-        if(buffer.size() < 2) return ;
-        buffer.addLast((buffer.get(0)+buffer.get(1))/2*DECAY);
+        if (buffer.size() < 2) return;
+        buffer.addLast((buffer.get(0) + buffer.get(1)) / 2 * DECAY);
         buffer.removeFirst();
     }
 
