@@ -22,7 +22,7 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
 
         @Override
         public T next() {
-            return items[(prev + wizPos)%items.length];
+            return items[(prev + (wizPos++))%items.length];
         }
     }
     public ArrayDeque() {
@@ -108,8 +108,8 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
 
     public boolean equals(Object o){
         if(o == null) return false;
-        if(this.getClass() != o.getClass()) return false;
-        ArrayDeque<T> other = (ArrayDeque<T>) o;
+        if(!(o instanceof Deque)) return false;
+        Deque<T> other = (Deque<T>) o;
         if(other.size() != this.size()) return false;
         int i = 0;
         for(T t : this){

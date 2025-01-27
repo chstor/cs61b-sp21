@@ -1,5 +1,6 @@
 package deque;
 
+import jh61b.junit.In;
 import org.junit.Test;
 
 import java.util.Comparator;
@@ -148,5 +149,16 @@ public class ArrayDequeTest {
         maxArrayDeque.addLast(15);
         maxArrayDeque.addLast(20);
         System.out.println(maxArrayDeque.max());
+    }
+    @Test
+    public void equalsTest(){
+        ArrayDeque<Integer> lld1 = new ArrayDeque<Integer>();
+        LinkedListDeque<Integer> lld2 = new LinkedListDeque<Integer>();
+        for (int i = 0; i < 3; i++) {
+            lld1.addLast(i);
+            lld2.addLast(i);
+        }
+        lld2.addLast(4);
+        assertEquals(false,lld1.equals(lld2));
     }
 }
