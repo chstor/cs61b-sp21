@@ -2,6 +2,8 @@ package deque;
 
 import org.junit.Test;
 
+import java.util.Comparator;
+
 import static org.junit.Assert.*;
 
 
@@ -130,7 +132,6 @@ public class ArrayDequeTest {
         for (int i = 0; i < 1000000; i++) {
             lld1.addLast(i);
         }
-
         for (double i = 0; i < 500000; i++) {
             assertEquals("Should have the same value", i, (double) lld1.removeFirst(), 0.0);
         }
@@ -138,5 +139,14 @@ public class ArrayDequeTest {
         for (double i = 999999; i > 500000; i--) {
             assertEquals("Should have the same value", i, (double) lld1.removeLast(), 0.0);
         }
+    }
+    @Test
+    public void MaxTest(){
+        Comparator<Integer> reverseOrder = Comparator.naturalOrder();
+        MaxArrayDeque<Integer> maxArrayDeque = new MaxArrayDeque<>(reverseOrder);
+        maxArrayDeque.addLast(10);
+        maxArrayDeque.addLast(15);
+        maxArrayDeque.addLast(20);
+        System.out.println(maxArrayDeque.max());
     }
 }
