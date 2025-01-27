@@ -79,29 +79,39 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T removeFirst() {
-        if (size == 0) return null;
+        if (size == 0) {
+            return null;
+        }
         T item = items[prev];
         items[prev] = null;
         prev = (prev + 1) % items.length;
         size -= 1;
-        if (items.length >= 16 && size * 1.0 / items.length < 0.25) resize(size);
+        if (items.length >= 16 && size * 1.0 / items.length < 0.25) {
+            resize(size);
+        }
         return item;
     }
 
     @Override
     public T removeLast() {
-        if (size == 0) return null;
+        if (size == 0) {
+            return null;
+        }
         next = (next - 1 + items.length) % items.length;
         T item = items[next];
         items[next] = null;
         size -= 1;
-        if (items.length >= 16 && size * 1.0 / items.length < 0.25) resize(size);
+        if (items.length >= 16 && size * 1.0 / items.length < 0.25) {
+            resize(size);
+        }
         return item;
     }
 
     @Override
     public T get(int index) {
-        if (index < 0 || index >= size) return null;
+        if (index < 0 || index >= size) {
+            return null;
+        }
         return items[(prev + index) % items.length];
     }
 
@@ -110,13 +120,21 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     public boolean equals(Object o) {
-        if (o == null) return false;
-        if (!(o instanceof Deque)) return false;
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof Deque)) {
+            return false;
+        }
         Deque<T> other = (Deque<T>) o;
-        if (other.size() != this.size()) return false;
+        if (other.size() != this.size()) {
+            return false;
+        }
         int i = 0;
         for (T t : this) {
-            if (!t.equals(other.get(i))) return false;
+            if (!t.equals(other.get(i))) {
+                return false;
+            }
             i += 1;
         }
         return true;

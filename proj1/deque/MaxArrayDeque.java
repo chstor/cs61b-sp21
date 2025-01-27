@@ -20,11 +20,15 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     }
 
     public T max(Comparator<T> c) {
-        if (isEmpty()) return null;
+        if (isEmpty()) {
+            return null;
+        }
         T maxItem = get(0);
         for (int i = 1; i < size(); i++) {
             T t = get(i);
-            if (c.compare(t, maxItem) > 0) maxItem = t;
+            if (c.compare(t, maxItem) > 0) {
+                maxItem = t;
+            }
         }
         return maxItem;
     }
