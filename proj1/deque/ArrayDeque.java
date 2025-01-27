@@ -39,14 +39,14 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
         }
         items = newItems;
         prev = 0;
-        next = size - 1;
+        next = size;
     }
     @Override
     public void addFirst(T item) {
         if(size == items.length){
             resize((int)(size * 1.5));
         }
-        if(size != 0) prev = (prev - 1 + items.length) % items.length;
+        prev = (prev - 1 + items.length) % items.length;
         items[prev] = item;
         size += 1;
     }
@@ -56,14 +56,9 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
         if(size == items.length){
             resize((int)(size * 1.5));
         }
-        if(size != 0) next = (next + 1 + items.length) % items.length;
         items[next] = item;
+        next = (next + 1 + items.length) % items.length;
         size += 1;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     @Override
@@ -83,6 +78,7 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
     public T removeFirst() {
         if(size == 0) return null;
         T item = items[prev];
+        items[prev] = null;
         prev = (prev + 1)%items.length;
         size -= 1;
         if(items.length >= 16 && size*1.0/items.length < 0.25) resize(size);
@@ -92,8 +88,9 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T> {
     @Override
     public T removeLast() {
         if(size == 0) return null;
-        T item = items[next];
         next = (next - 1 + items.length)%items.length;
+        T item = items[next];
+        items[next] = null;
         size -= 1;
         if(items.length >= 16 && size*1.0/items.length < 0.25) resize(size);
         return item;

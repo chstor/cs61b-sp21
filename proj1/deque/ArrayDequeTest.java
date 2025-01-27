@@ -52,10 +52,14 @@ public class ArrayDequeTest {
 		// should not be empty
 		assertFalse("lld1 should contain 1 item", lld1.isEmpty());
 
-		lld1.removeFirst();
+        assertEquals((Integer) 10,lld1.removeLast());
 		// should be empty
 		assertTrue("lld1 should be empty after removal", lld1.isEmpty());
 
+        lld1.addFirst(11);
+        lld1.isEmpty();
+        assertEquals((Integer) 11,lld1.removeLast());
+        lld1.printDeque();
     }
 
     @Test
@@ -134,7 +138,5 @@ public class ArrayDequeTest {
         for (double i = 999999; i > 500000; i--) {
             assertEquals("Should have the same value", i, (double) lld1.removeLast(), 0.0);
         }
-
-
     }
 }
