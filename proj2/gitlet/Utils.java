@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
 
+import static gitlet.Repository.*;
+
 
 /** Assorted utilities.
  *
@@ -235,5 +237,18 @@ class Utils {
     static void message(String msg, Object... args) {
         System.out.printf(msg, args);
         System.out.println();
+    }
+
+    static void exitWithError(String message) {
+        if (message != null && !message.equals("")) {
+            System.out.println(message);
+        }
+        System.exit(-1);
+    }
+    static <T extends Serializable> T findBlobBySha1(String sha1,Class<T> tClass){
+        String prefix = sha1.substring(0,2);
+        String suffix = sha1.substring(3);
+        File f = join(OBJECTS_DIR, prefix,suffix);
+        return readObject(f,tClass);
     }
 }
