@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.TreeMap;
+
 import static gitlet.Utils.*;
 import static gitlet.Repository.*;
 
@@ -28,18 +30,22 @@ public class Commit implements Serializable {
     private String message;
     private Date date;
 
-    private transient Tree tree;
     private transient Commit parent;
-    private String tree_sha1;
+    private transient Stage commit_stage;
+    private transient Tree track_tree;
     private String parent_sha1;
+    private String commit_stage_sha1;
+    private String track_tree_sha1;
 
-    public Commit(String message, Date date, Tree tree, Commit parent, String tree_sha1, String parent_sha1) {
+    public Commit() {
+    }
+
+    public Commit(String message, Date date, Commit parent, Stage commit_stage,Tree track_tree) {
         this.message = message;
         this.date = date;
-        this.tree = tree;
         this.parent = parent;
-        this.tree_sha1 = tree_sha1;
-        this.parent_sha1 = parent_sha1;
+        this.commit_stage = commit_stage;
+        this.track_tree = track_tree;
     }
 
     public String getMessage() {
@@ -58,14 +64,6 @@ public class Commit implements Serializable {
         this.date = date;
     }
 
-    public Tree getTree() {
-        return tree;
-    }
-
-    public void setTree(Tree tree) {
-        this.tree = tree;
-    }
-
     public Commit getParent() {
         return parent;
     }
@@ -74,20 +72,44 @@ public class Commit implements Serializable {
         this.parent = parent;
     }
 
-    public String getTree_sha1() {
-        return tree_sha1;
-    }
-
-    public void setTree_sha1(String tree_sha1) {
-        this.tree_sha1 = tree_sha1;
-    }
-
     public String getParent_sha1() {
         return parent_sha1;
     }
 
     public void setParent_sha1(String parent_sha1) {
         this.parent_sha1 = parent_sha1;
+    }
+
+    public Stage getCommit_stage() {
+        return commit_stage;
+    }
+
+    public void setCommit_stage(Stage commit_stage) {
+        this.commit_stage = commit_stage;
+    }
+
+    public String getCommit_stage_sha1() {
+        return commit_stage_sha1;
+    }
+
+    public void setCommit_stage_sha1(String commit_stage_sha1) {
+        this.commit_stage_sha1 = commit_stage_sha1;
+    }
+
+    public Tree getTrack_tree() {
+        return track_tree;
+    }
+
+    public void setTrack_tree(Tree track_tree) {
+        this.track_tree = track_tree;
+    }
+
+    public String getTrack_tree_sha1() {
+        return track_tree_sha1;
+    }
+
+    public void setTrack_tree_sha1(String track_tree_sha1) {
+        this.track_tree_sha1 = track_tree_sha1;
     }
 
     public void createCommit() {
@@ -104,4 +126,16 @@ public class Commit implements Serializable {
             throw new RuntimeException(e);
         }
     }
+    public void restoreCommit() {
+        this.parent = parent_sha1==null ? new Commit() : findObjectBySha1(this.parent_sha1, Commit.class);
+        this.commit_stage = commit_stage_sha1 == null ? new Stage() : findObjectBySha1(this.commit_stage_sha1,Stage.class);
+        this.track_tree = track_tree_sha1 == null ? new Tree() : findObjectBySha1(this.track_tree_sha1,Tree.class);
+    }
+
+    public void setSha1(){
+        this.commit_stage_sha1 = sha1(this.commit_stage);
+        this.parent_sha1 = sha1(this.parent);
+        this.track_tree_sha1 = sha1(this.track_tree);
+    }
+
 }

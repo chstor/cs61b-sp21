@@ -13,6 +13,10 @@ public class Stage implements Serializable {
     private transient Tree tree;
     private String tree_sha1;
 
+    public Stage() {
+        tree = new Tree();
+    }
+
     public Stage(Tree tree, String tree_sha1) {
         this.tree = tree;
         this.tree_sha1 = tree_sha1;
@@ -41,5 +45,25 @@ public class Stage implements Serializable {
             throw new RuntimeException(e);
         }
     }
-
+    public void createStageBlob() {
+        restrictedDelete(Stage_File);
+        String s = Utils.sha1(this);
+        String prefix = s.substring(0,2);
+        String suffix = s.substring(3);
+        File dir = join(OBJECTS_DIR, prefix);
+        dir.mkdir();
+        File f = join(dir, suffix);
+        try {
+            f.createNewFile();
+            writeContents(f,this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void restoreStage() {
+        this.tree = tree_sha1 == null ? new Tree() : findObjectBySha1(this.tree_sha1, Tree.class);
+    }
+    public void setSha1(){
+        this.tree_sha1 = sha1(this.tree);
+    }
 }

@@ -13,10 +13,9 @@ public class Branch implements Serializable {
     private transient Commit commit;
     private String commit_sha1;
 
-    public Branch(String name, Commit commit, String commit_sha1) {
+    public Branch(String name, Commit commit) {
         this.name = name;
         this.commit = commit;
-        this.commit_sha1 = commit_sha1;
     }
 
     public String getName() {
@@ -45,11 +44,20 @@ public class Branch implements Serializable {
 
     public void createBranch() {
         File f = join(REFSHEADS_DIR,this.name);
+        restrictedDelete(f);
         try {
             f.createNewFile();
-            Utils.writeObject(f,commit_sha1);
+            Utils.writeObject(f,this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setSha1(){
+        this.commit_sha1 = sha1(commit);
+    }
+
+    public void restoreBranch() {
+        this.commit = findObjectBySha1(commit_sha1,Commit.class);
     }
 }

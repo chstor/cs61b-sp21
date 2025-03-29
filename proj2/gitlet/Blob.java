@@ -30,7 +30,7 @@ public class Blob implements Serializable {
         File f = join(dir, suffix);
         try {
             f.createNewFile();
-            writeContents(f,context);
+            writeContents(f,this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

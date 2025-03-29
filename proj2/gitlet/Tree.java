@@ -10,13 +10,14 @@ import static gitlet.Utils.*;
 
 public class Tree implements Serializable {
     private TreeMap<String,String> blobs = new TreeMap<>();
-    private transient Tree child;
     private String childTree_sha1;
 
-    public Tree(TreeMap<String, String> blobs, Tree child, String childTree_sha1) {
+    public Tree() {
+        blobs = new TreeMap<>();
+    }
+
+    public Tree(TreeMap<String, String> blobs) {
         this.blobs = blobs;
-        this.child = child;
-        this.childTree_sha1 = childTree_sha1;
     }
 
     public TreeMap<String, String> getBlobs() {
@@ -25,14 +26,6 @@ public class Tree implements Serializable {
 
     public void setBlobs(TreeMap<String, String> blobs) {
         this.blobs = blobs;
-    }
-
-    public Tree getChild() {
-        return child;
-    }
-
-    public void setChild(Tree child) {
-        this.child = child;
     }
 
     public String getChildTree_sha1() {
@@ -56,4 +49,5 @@ public class Tree implements Serializable {
             throw new RuntimeException(e);
         }
     }
+
 }

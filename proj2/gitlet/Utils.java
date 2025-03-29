@@ -245,10 +245,17 @@ class Utils {
         }
         System.exit(-1);
     }
-    static <T extends Serializable> T findBlobBySha1(String sha1,Class<T> tClass){
+    static <T extends Serializable> T findObjectBySha1(String sha1,Class<T> tClass){
         String prefix = sha1.substring(0,2);
         String suffix = sha1.substring(3);
         File f = join(OBJECTS_DIR, prefix,suffix);
         return readObject(f,tClass);
+    }
+
+    static void writeContentsBySha1(String sha1,Serializable object) {
+        String prefix = sha1.substring(0,2);
+        String suffix = sha1.substring(3);
+        File f = join(OBJECTS_DIR, prefix,suffix);
+        writeObject(f, object);
     }
 }

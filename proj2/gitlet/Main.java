@@ -25,6 +25,9 @@ public class Main {
             case "commit":
                 String message = args[1];
                 Repository.commit(message);
+            case "rm":
+                fileName = args[1];
+                Repository.rm(fileName);
             default:
                 Utils.exitWithError(String.format("Unknown command: %s", args[0]));
         }
