@@ -52,9 +52,19 @@ public class Head implements Serializable {
         this.branch_sha1 = branch_sha1;
     }
 
+    @Override
+    public String toString() {
+        return "Head{" +
+                "commit_sha1='" + commit_sha1 + '\'' +
+                ", branch_sha1='" + branch_sha1 + '\'' +
+                '}';
+    }
+
     public void createHead() {
-        restrictedDelete(HEAD_FILE);
         File f = HEAD_FILE;
+        if(f.exists()) {
+            restrictedDelete(HEAD_FILE);
+        }
         try {
             f.createNewFile();
             writeObject(f,this);
@@ -69,7 +79,7 @@ public class Head implements Serializable {
     }
 
     public void setSha1() {
-        this.commit_sha1 = sha1(commit);
-        this.branch_sha1 = sha1(branch);
+        this.commit_sha1 = sha1(commit.toString());
+        this.branch_sha1 = sha1(branch.toString());
     }
 }

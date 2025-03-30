@@ -104,10 +104,21 @@ public class Commit implements Serializable {
         this.track = track;
     }
 
+    @Override
+    public String toString() {
+        return "Commit{" +
+                "message='" + message + '\'' +
+                ", date=" + date +
+                ", track=" + track +
+                ", parent_sha1='" + parent_sha1 + '\'' +
+                ", commit_stage_sha1='" + commit_stage_sha1 + '\'' +
+                '}';
+    }
+
     public void createCommit() {
-        String s = Utils.sha1(this);
+        String s = sha1(this.toString());
         String prefix = s.substring(0,2);
-        String suffix = s.substring(3);
+        String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);
         dir.mkdir();
         File f = join(dir, suffix);
@@ -126,8 +137,8 @@ public class Commit implements Serializable {
     }
 
     public void setSha1(){
-        this.commit_stage_sha1 = sha1(this.commit_stage);
-        this.parent_sha1 = sha1(this.parent);
+        this.commit_stage_sha1 = sha1(this.commit_stage.toString());
+        this.parent_sha1 = sha1(this.parent.toString());
     }
 
 }

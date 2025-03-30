@@ -25,6 +25,13 @@ public class Stage implements Serializable {
         this.blobs = blobs;
     }
 
+    @Override
+    public String toString() {
+        return "Stage{" +
+                "blobs=" + blobs +
+                '}';
+    }
+
     public static void createStage(){
         try {
              Stage_File.createNewFile();
@@ -34,9 +41,9 @@ public class Stage implements Serializable {
     }
     public void createStageBlob() {
         restrictedDelete(Stage_File);
-        String s = Utils.sha1(this);
+        String s = sha1(this.toString());
         String prefix = s.substring(0,2);
-        String suffix = s.substring(3);
+        String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);
         dir.mkdir();
         File f = join(dir, suffix);

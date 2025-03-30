@@ -27,7 +27,7 @@ public class Tree implements Serializable {
     }
 
     public void createTree() {
-        String s = Utils.sha1(this);
+        String s = Utils.sha1(this.toString());
         String prefix = s.substring(0,2);
         String suffix = s.substring(3);
         File dir = join(OBJECTS_DIR, prefix);

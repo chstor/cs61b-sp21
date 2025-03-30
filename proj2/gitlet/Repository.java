@@ -1,7 +1,5 @@
 package gitlet;
 
-import org.eclipse.jetty.util.StringUtil;
-
 import java.io.File;
 import java.util.Date;
 import java.util.TreeMap;
@@ -79,6 +77,9 @@ public class Repository {
         Head head = new Head(commit,branch);
         head.setSha1();
         head.createHead();
+
+        head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
     }
 
     /*
@@ -123,7 +124,7 @@ public class Repository {
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         Commit commit = head.getCommit();
-        String commit_sha1 = sha1(commit);
+        String commit_sha1 = sha1(commit.toString());
         commit.restoreCommit();
         commit.getTrack().put(fileName, context);
         writeContentsBySha1(commit_sha1,commit);
@@ -131,7 +132,7 @@ public class Repository {
 
     public static void commit(String message){
         //if message is blank
-        if(StringUtil.isBlank(message)){
+        if(message.equals("")){
             System.out.println("Please enter a commit message.");
             return;
         }
@@ -168,7 +169,7 @@ public class Repository {
             branch.createBranch();
         }
         //change head
-        head.setCommit_sha1(sha1(commit));
+        head.setCommit_sha1(sha1(commit.toString()));
         head.createHead();
     }
 
@@ -188,7 +189,7 @@ public class Repository {
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         Commit commit = head.getCommit();
-        String commit_sha1 = sha1(commit);
+        String commit_sha1 = sha1(commit.toString());
         TreeMap<String, String> track = commit.getTrack();
 
         if(track.containsKey(fileName)){
@@ -208,7 +209,7 @@ public class Repository {
         while(commit != null){
             commit.restoreCommit();
             System.out.println("===");
-            System.out.println("commit" + sha1(commit));
+            System.out.println("commit" + sha1(commit.toString()));
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
             commit = commit.getParent();

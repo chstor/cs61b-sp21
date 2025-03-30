@@ -247,14 +247,14 @@ class Utils {
     }
     static <T extends Serializable> T findObjectBySha1(String sha1,Class<T> tClass){
         String prefix = sha1.substring(0,2);
-        String suffix = sha1.substring(3);
+        String suffix = sha1.substring(2);
         File f = join(OBJECTS_DIR, prefix,suffix);
         return readObject(f,tClass);
     }
 
     static void writeContentsBySha1(String sha1,Serializable object) {
         String prefix = sha1.substring(0,2);
-        String suffix = sha1.substring(3);
+        String suffix = sha1.substring(2);
         File f = join(OBJECTS_DIR, prefix,suffix);
         writeObject(f, object);
     }

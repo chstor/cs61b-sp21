@@ -42,9 +42,34 @@ public class Branch implements Serializable {
         this.commit_sha1 = commit_sha1;
     }
 
+    @Override
+    public String toString() {
+        return "Branch{" +
+                "name='" + name + '\'' +
+                ", commit_sha1='" + commit_sha1 + '\'' +
+                '}';
+    }
+
     public void createBranch() {
         File f = join(REFSHEADS_DIR,this.name);
-        restrictedDelete(f);
+        if(f.exists()) {
+            restrictedDelete(f);
+        }
+        try {
+            f.createNewFile();
+            writeObject(f,this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        createBranchBlob();
+    }
+    public void createBranchBlob(){
+        String s = sha1(this.toString());
+        String prefix = s.substring(0,2);
+        String suffix = s.substring(2);
+        File dir = join(OBJECTS_DIR, prefix);
+        dir.mkdir();
+        File f = join(dir, suffix);
         try {
             f.createNewFile();
             writeObject(f,this);
@@ -52,9 +77,8 @@ public class Branch implements Serializable {
             throw new RuntimeException(e);
         }
     }
-
     public void setSha1(){
-        this.commit_sha1 = sha1(commit);
+        this.commit_sha1 = sha1(commit.toString());
     }
 
     public void restoreBranch() {
