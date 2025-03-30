@@ -47,7 +47,7 @@ public class Branch implements Serializable {
         restrictedDelete(f);
         try {
             f.createNewFile();
-            Utils.writeObject(f,this);
+            writeObject(f,this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

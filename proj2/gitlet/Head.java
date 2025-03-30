@@ -57,7 +57,7 @@ public class Head implements Serializable {
         File f = HEAD_FILE;
         try {
             f.createNewFile();
-            writeContents(f,this);
+            writeObject(f,this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

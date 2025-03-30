@@ -22,15 +22,18 @@ public class Blob implements Serializable {
     }
 
     public void createBlob(){
-        String s = Utils.sha1(this);
+        String s = Utils.sha1(context);
         String prefix = s.substring(0,2);
         String suffix = s.substring(3);
         File dir = join(OBJECTS_DIR, prefix);
         dir.mkdir();
         File f = join(dir, suffix);
+        if(f.exists()){
+            return;
+        }
         try {
             f.createNewFile();
-            writeContents(f,this);
+            writeObject(f,context);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

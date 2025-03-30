@@ -29,23 +29,23 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     private String message;
     private Date date;
+    private TreeMap<String,String> track;
 
     private transient Commit parent;
     private transient Stage commit_stage;
-    private transient Tree track_tree;
     private String parent_sha1;
     private String commit_stage_sha1;
-    private String track_tree_sha1;
 
     public Commit() {
+        track = new TreeMap<>();
     }
 
-    public Commit(String message, Date date, Commit parent, Stage commit_stage,Tree track_tree) {
+    public Commit(String message, Date date, Commit parent, Stage commit_stage,TreeMap<String,String> track) {
         this.message = message;
         this.date = date;
         this.parent = parent;
         this.commit_stage = commit_stage;
-        this.track_tree = track_tree;
+        this.track = track;
     }
 
     public String getMessage() {
@@ -96,20 +96,12 @@ public class Commit implements Serializable {
         this.commit_stage_sha1 = commit_stage_sha1;
     }
 
-    public Tree getTrack_tree() {
-        return track_tree;
+    public TreeMap<String, String> getTrack() {
+        return track;
     }
 
-    public void setTrack_tree(Tree track_tree) {
-        this.track_tree = track_tree;
-    }
-
-    public String getTrack_tree_sha1() {
-        return track_tree_sha1;
-    }
-
-    public void setTrack_tree_sha1(String track_tree_sha1) {
-        this.track_tree_sha1 = track_tree_sha1;
+    public void setTrack(TreeMap<String, String> track) {
+        this.track = track;
     }
 
     public void createCommit() {
@@ -121,21 +113,21 @@ public class Commit implements Serializable {
         File f = join(dir, suffix);
         try {
             f.createNewFile();
-            writeContents(f,this);
+            writeObject(f,this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
     public void restoreCommit() {
-        this.parent = parent_sha1==null ? new Commit() : findObjectBySha1(this.parent_sha1, Commit.class);
+        if(this.parent_sha1 != null){
+            this.parent = findObjectBySha1(this.parent_sha1, Commit.class);
+        }
         this.commit_stage = commit_stage_sha1 == null ? new Stage() : findObjectBySha1(this.commit_stage_sha1,Stage.class);
-        this.track_tree = track_tree_sha1 == null ? new Tree() : findObjectBySha1(this.track_tree_sha1,Tree.class);
     }
 
     public void setSha1(){
         this.commit_stage_sha1 = sha1(this.commit_stage);
         this.parent_sha1 = sha1(this.parent);
-        this.track_tree_sha1 = sha1(this.track_tree);
     }
 
 }
