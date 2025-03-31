@@ -13,27 +13,27 @@ import static gitlet.Utils.*;
 public class Log implements Serializable {
     public static final File LOG_File = join(GITLET_DIR, "logs");
 
-    private List<String> commit_blobs;
-    private  List<String> branch_blobs;
+    private LinkedList<String> commit_blobs;
+    private  LinkedList<String> branch_blobs;
 
     public Log() {
         commit_blobs = new LinkedList<>();
         branch_blobs = new LinkedList<>();
     }
 
-    public List<String> getCommit_blobs() {
+    public LinkedList<String> getCommit_blobs() {
         return commit_blobs;
     }
 
-    public void setCommit_blobs(List<String> commit_blobs) {
+    public void setCommit_blobs(LinkedList<String> commit_blobs) {
         this.commit_blobs = commit_blobs;
     }
 
-    public List<String> getBranch_blobs() {
+    public LinkedList<String> getBranch_blobs() {
         return branch_blobs;
     }
 
-    public void setBranch_blobs(List<String> branch_blobs) {
+    public void setBranch_blobs(LinkedList<String> branch_blobs) {
         this.branch_blobs = branch_blobs;
     }
 

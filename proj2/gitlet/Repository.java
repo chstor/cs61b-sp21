@@ -137,6 +137,13 @@ public class Repository {
         commit.createCommit();
         head.setSha1();
         writeObject(HEAD_FILE,head);
+
+        Log log = new Log();
+        if(log.getCommit_blobs().size()>0){
+            log.getCommit_blobs().removeLast();
+        }
+        log.getCommit_blobs().add(sha1(commit.toString()));
+        log.createLog();
     }
 
     public static void commit(String message){
