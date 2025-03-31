@@ -84,8 +84,8 @@ public class Repository {
         * create log : save commit,branch
         * */
         Log log = new Log();
-        log.getCommit_blobs().add(sha1(commit));
-        log.getBranch_blobs().add(sha1(branch));
+        log.getCommit_blobs().add(sha1(commit.toString()));
+        log.getBranch_blobs().add(sha1(branch.toString()));
         log.createLog();
 //        head = readObject(HEAD_FILE, Head.class);
 //        head.restoreHead();
@@ -133,7 +133,7 @@ public class Repository {
         head.restoreHead();
         Commit commit = head.getCommit();
         commit.restoreCommit();
-        commit.getTrack().put(fileName, context);
+        commit.getTrack().put(fileName, sha1(context));
         commit.createCommit();
         head.setSha1();
         writeObject(HEAD_FILE,head);
@@ -173,16 +173,16 @@ public class Repository {
 
         //if head->commit == branch->commit
         if(head.getCommit_sha1().equals(branch.getCommit_sha1())){
-            branch.setCommit_sha1(sha1(commit));
+            branch.setCommit_sha1(sha1(commit.toString()));
             //change branch
             branch.createBranch();
         }
         //change head
-        head.setCommit_sha1(sha1(commit));
+        head.setCommit_sha1(sha1(commit.toString()));
         head.createHead();
 
         Log log = readObject(LOG_File, Log.class);
-        log.getCommit_blobs().add(sha1(commit));
+        log.getCommit_blobs().add(sha1(commit.toString()));
         log.createLog();
     }
 
@@ -224,13 +224,14 @@ public class Repository {
         while(commit != null){
             commit.restoreCommit();
             System.out.println("===");
-            System.out.println("commit " + sha1(commit));
+            System.out.println("commit " + sha1(commit.toString()));
             if(commit.getMerge_message()!=null){
                 System.out.println("Merge: " +  commit.getMerge_message());
             }
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
             commit = commit.getParent();
+            System.out.println();
         }
     }
 
@@ -240,7 +241,7 @@ public class Repository {
         for(String commitBlob : commitBlobs){
             Commit commit = findObjectBySha1(commitBlob, Commit.class);
             System.out.println("===");
-            System.out.println("commit " + sha1(commit));
+            System.out.println("commit " + sha1(commit.toString()));
             if(commit.getMerge_message()!=null){
                 System.out.println("Merge: " +  commit.getMerge_message());
             }
@@ -404,17 +405,16 @@ public class Repository {
         createCWDfile(fileName,context);
     }
 
-    public static void createCWDfile(String fileName,Serializable object){
+    public static void createCWDfile(String fileName,String context){
         File f = join(CWD, fileName);
         if(f.exists()){
             f.delete();
-        }else{
-            try {
-                f.createNewFile();
-                writeObject(f,object);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        }
+        try {
+            f.createNewFile();
+            writeContents(f,context);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

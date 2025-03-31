@@ -22,7 +22,7 @@ public class Blob implements Serializable {
     }
 
     public void createBlob(){
-        String s = Utils.sha1(context);
+        String s = sha1(context);
         String prefix = s.substring(0,2);
         String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);

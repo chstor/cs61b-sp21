@@ -13,10 +13,12 @@ import static gitlet.Utils.*;
 public class Log implements Serializable {
     public static final File LOG_File = join(GITLET_DIR, "logs");
 
-    private List<String> commit_blobs = new LinkedList<>();
-    private  List<String> branch_blobs = new LinkedList<>();
+    private List<String> commit_blobs;
+    private  List<String> branch_blobs;
 
     public Log() {
+        commit_blobs = new LinkedList<>();
+        branch_blobs = new LinkedList<>();
     }
 
     public List<String> getCommit_blobs() {

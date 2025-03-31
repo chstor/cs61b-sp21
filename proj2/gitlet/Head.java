@@ -79,7 +79,7 @@ public class Head implements Serializable {
     }
 
     public void setSha1() {
-        this.commit_sha1 = sha1(commit);
-        this.branch_sha1 = sha1(branch);
+        this.commit_sha1 = sha1(commit.toString());
+        this.branch_sha1 = sha1(branch.toString());
     }
 }

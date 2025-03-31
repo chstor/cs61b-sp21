@@ -5,7 +5,10 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import static gitlet.Utils.*;
@@ -57,8 +60,10 @@ public class Commit implements Serializable {
         this.message = message;
     }
 
-    public Date getDate() {
-        return date;
+    public String getDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return sdf.format(date);
     }
 
     public void setDate(Date date) {
@@ -125,7 +130,7 @@ public class Commit implements Serializable {
     }
 
     public void createCommit() {
-        String s = sha1(this);
+        String s = sha1(this.toString());
         String prefix = s.substring(0,2);
         String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);
@@ -148,8 +153,8 @@ public class Commit implements Serializable {
     }
 
     public void setSha1(){
-        this.commit_stage_sha1 = sha1(this.commit_stage);
-        this.parent_sha1 = sha1(this.parent);
+        this.commit_stage_sha1 = sha1(this.commit_stage.toString());
+        this.parent_sha1 = sha1(this.parent.toString());
     }
 
 }
