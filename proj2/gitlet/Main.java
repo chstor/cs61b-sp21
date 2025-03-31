@@ -33,6 +33,29 @@ public class Main {
             case "log":
                 Repository.log();
                 break;
+            case "global-log":
+                Repository.globalLog();
+                break;
+            case "find":
+                message = args[1];
+                Repository.find(message);
+                break;
+            case "status":
+                Repository.status();
+                break;
+            case "checkout":
+                if(args.length == 2) {
+                    String branchName = args[1];
+                    Repository.checkoutBranch();
+                }else if(args.length == 3) {
+                    fileName = args[2];
+                    Repository.checkoutFile(fileName);
+                }else{
+                    String commitId = args[1];
+                    fileName = args[3];
+                    Repository.checkoutFileByCommitId(commitId,fileName);
+                }
+                break;
             default:
                 Utils.exitWithError(String.format("Unknown command: %s", args[0]));
         }

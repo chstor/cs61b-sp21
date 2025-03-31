@@ -29,6 +29,7 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     private String message;
     private Date date;
+    private String merge_message;
     private TreeMap<String,String> track;
 
     private transient Commit parent;
@@ -104,6 +105,14 @@ public class Commit implements Serializable {
         this.track = track;
     }
 
+    public String getMerge_message() {
+        return merge_message;
+    }
+
+    public void setMerge_message(String merge_message) {
+        this.merge_message = merge_message;
+    }
+
     @Override
     public String toString() {
         return "Commit{" +
@@ -116,7 +125,7 @@ public class Commit implements Serializable {
     }
 
     public void createCommit() {
-        String s = sha1(this.toString());
+        String s = sha1(this);
         String prefix = s.substring(0,2);
         String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);
@@ -139,8 +148,8 @@ public class Commit implements Serializable {
     }
 
     public void setSha1(){
-        this.commit_stage_sha1 = sha1(this.commit_stage.toString());
-        this.parent_sha1 = sha1(this.parent.toString());
+        this.commit_stage_sha1 = sha1(this.commit_stage);
+        this.parent_sha1 = sha1(this.parent);
     }
 
 }

@@ -1,10 +1,10 @@
 package gitlet;
 
 import java.io.File;
-import java.util.Date;
-import java.util.TreeMap;
+import java.util.*;
 
 import static gitlet.Head.HEAD_FILE;
+import static gitlet.Log.LOG_File;
 import static gitlet.Stage.*;
 import static gitlet.Utils.*;
 
@@ -29,7 +29,6 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-    public static final File LOGS_DIR = join(GITLET_DIR, "logs");
     public static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
     public static final File REFS_DIR = join(GITLET_DIR, "refs");
     public static final File REFSHEADS_DIR = join(Repository.REFS_DIR, "heads");
@@ -46,7 +45,6 @@ public class Repository {
             create .gitlet logs objects refs/heads dir.
         */
         GITLET_DIR.mkdir();
-        LOGS_DIR.mkdir();
         OBJECTS_DIR.mkdir();
         REFSHEADS_DIR.mkdirs();
 
@@ -59,7 +57,8 @@ public class Repository {
         commit.setMessage(message);
         commit.setDate(new Date());
         commit.createCommit();
-        //System.out.println(sha1(commit.toString()));
+
+        //System.out.println(sha1(commit));
 
         /*
         * 1、create branch class: name,commit.
@@ -79,9 +78,16 @@ public class Repository {
         head.setSha1();
         head.createHead();
 
-        head = readObject(HEAD_FILE, Head.class);
-        head.restoreHead();
-        System.out.println(sha1(head.getCommit().toString()));
+        /*
+        * create log : save commit,branch
+        * */
+        Log log = new Log();
+        log.getCommit_blobs().add(sha1(commit));
+        log.getBranch_blobs().add(sha1(branch));
+        log.createLog();
+//        head = readObject(HEAD_FILE, Head.class);
+//        head.restoreHead();
+//        System.out.println(sha1(head.getCommit()));
     }
 
     /*
@@ -104,7 +110,6 @@ public class Repository {
             //if exist,read stageFile to stage class
             stage = readObject(Stage_File, Stage.class);
         }
-
 
         //read file.context
         String context = readContentsAsString(f);
@@ -171,8 +176,12 @@ public class Repository {
             branch.createBranch();
         }
         //change head
-        head.setCommit_sha1(sha1(commit.toString()));
+        head.setCommit_sha1(sha1(commit));
         head.createHead();
+
+        Log log = readObject(LOG_File, Log.class);
+        log.getCommit_blobs().add(sha1(commit));
+        log.createLog();
     }
 
     public static void rm(String fileName) {
@@ -213,10 +222,114 @@ public class Repository {
         while(commit != null){
             commit.restoreCommit();
             System.out.println("===");
-            System.out.println("commit " + sha1(commit.toString()));
+            System.out.println("commit " + sha1(commit));
+            if(commit.getMerge_message()!=null){
+                System.out.println("Merge: " +  commit.getMerge_message());
+            }
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
             commit = commit.getParent();
         }
+    }
+
+    public static void globalLog() {
+        Log log = readObject(LOG_File, Log.class);
+        List<String> commitBlobs = log.getCommit_blobs();
+        for(String commitBlob : commitBlobs){
+            Commit commit = findObjectBySha1(commitBlob, Commit.class);
+            System.out.println("===");
+            System.out.println("commit " + sha1(commit));
+            if(commit.getMerge_message()!=null){
+                System.out.println("Merge: " +  commit.getMerge_message());
+            }
+            System.out.println("Date: " + commit.getDate());
+            System.out.println(commit.getMessage());
+        }
+    }
+    public static void find(String message) {
+        Log log = readObject(LOG_File, Log.class);
+        List<String> commitBlobs = log.getCommit_blobs();
+        boolean found = false;
+        for(String commitBlob : commitBlobs){
+            Commit commit = findObjectBySha1(commitBlob, Commit.class);
+            if(commit.getMessage().equals(message)){
+                found = true;
+                System.out.printf(commitBlob);
+            }
+        }
+        if(!found){
+            System.out.println("Found no commit with that message.");
+        }
+    }
+
+    public static void status() {
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+
+        Commit commit = head.getCommit();
+        TreeMap<String, String> track = commit.getTrack();
+        Branch currentBranch = head.getBranch();
+
+        Log log = readObject(LOG_File, Log.class);
+        System.out.println("=== Branches ===");
+        List<String> branchBlobs = log.getBranch_blobs();
+        for(String branchBlob : branchBlobs){
+            Branch branch = findObjectBySha1(branchBlob, Branch.class);
+            if(currentBranch.getName().equals(branch.getName())){
+                System.out.print("*");
+            }
+            System.out.println(branch.getName());
+        }
+
+        System.out.println("=== Staged Files ===");
+        Set<String> trackFiles = track.keySet();
+        Set<String> stageFiles;
+        if(Stage_File.exists()){
+            Stage stage = readObject(Stage_File, Stage.class);
+            stageFiles = stage.getBlobs().keySet();
+        }else{
+            stageFiles = new TreeSet<>();
+        }
+
+        List<String> fileNames = plainFilenamesIn(GITLET_DIR);
+        System.out.println("=== Removed Files ===");
+        for(String fileName : stageFiles){
+            if(!fileNames.contains(fileName)){
+                System.out.println(fileName);
+            }
+        }
+
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        for(String fileName : trackFiles){
+            if(!fileNames.contains(fileName)){
+                System.out.println(fileName + "(deleted)");
+            }else{
+                File f = join(CWD,fileName);
+                String context = readContentsAsString(f);
+                String track_context= findObjectBySha1(track.get(fileName),String.class);
+                if(!context.equals(track_context)){
+                    System.out.println(fileName + "(modified)");
+                }
+            }
+        }
+
+        System.out.println("=== Untracked Files ===");
+        for(String fileName : fileNames){
+            if(!trackFiles.contains(fileName)){
+                System.out.println(fileName);
+            }
+        }
+    }
+
+    public static void checkoutBranch() {
+
+    }
+
+    public static void checkoutFile(String fileName) {
+
+    }
+
+    public static void checkoutFileByCommitId(String commitId, String fileName) {
+
     }
 }

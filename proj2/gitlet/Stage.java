@@ -41,7 +41,7 @@ public class Stage implements Serializable {
     }
     public void createStageBlob() {
         Stage_File.delete();
-        String s = sha1(this.toString());
+        String s = sha1(this);
         String prefix = s.substring(0,2);
         String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);

@@ -64,7 +64,7 @@ public class Branch implements Serializable {
         createBranchBlob();
     }
     public void createBranchBlob(){
-        String s = sha1(this.toString());
+        String s = sha1(this);
         String prefix = s.substring(0,2);
         String suffix = s.substring(2);
         File dir = join(OBJECTS_DIR, prefix);
@@ -78,7 +78,7 @@ public class Branch implements Serializable {
         }
     }
     public void setSha1(){
-        this.commit_sha1 = sha1(commit.toString());
+        this.commit_sha1 = sha1(commit);
     }
 
     public void restoreBranch() {
