@@ -53,7 +53,7 @@ public class Branch implements Serializable {
     public void createBranch() {
         File f = join(REFSHEADS_DIR,this.name);
         if(f.exists()) {
-            restrictedDelete(f);
+            f.delete();
         }
         try {
             f.createNewFile();

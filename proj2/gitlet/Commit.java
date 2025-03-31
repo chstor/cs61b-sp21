@@ -133,7 +133,9 @@ public class Commit implements Serializable {
         if(this.parent_sha1 != null){
             this.parent = findObjectBySha1(this.parent_sha1, Commit.class);
         }
-        this.commit_stage = commit_stage_sha1 == null ? new Stage() : findObjectBySha1(this.commit_stage_sha1,Stage.class);
+        if(this.commit_stage != null){
+            this.commit_stage = findObjectBySha1(this.commit_stage_sha1,Stage.class);
+        }
     }
 
     public void setSha1(){

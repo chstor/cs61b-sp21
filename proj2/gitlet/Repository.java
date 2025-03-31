@@ -59,6 +59,7 @@ public class Repository {
         commit.setMessage(message);
         commit.setDate(new Date());
         commit.createCommit();
+        //System.out.println(sha1(commit.toString()));
 
         /*
         * 1、create branch class: name,commit.
@@ -80,6 +81,7 @@ public class Repository {
 
         head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
+        System.out.println(sha1(head.getCommit().toString()));
     }
 
     /*
@@ -111,7 +113,6 @@ public class Repository {
         TreeMap<String, String> blobs = stage.getBlobs();
         Blob blob = new Blob(context);
         blob.createBlob();
-        writeContentsBySha1(sha1(context),context);
         blobs.put(fileName, sha1(context));
 
         writeObject(Stage_File,stage);
@@ -124,10 +125,11 @@ public class Repository {
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         Commit commit = head.getCommit();
-        String commit_sha1 = sha1(commit.toString());
         commit.restoreCommit();
         commit.getTrack().put(fileName, context);
-        writeContentsBySha1(commit_sha1,commit);
+        commit.createCommit();
+        head.setSha1();
+        writeObject(HEAD_FILE,head);
     }
 
     public static void commit(String message){
@@ -189,7 +191,6 @@ public class Repository {
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         Commit commit = head.getCommit();
-        String commit_sha1 = sha1(commit.toString());
         TreeMap<String, String> track = commit.getTrack();
 
         if(track.containsKey(fileName)){
@@ -199,17 +200,20 @@ public class Repository {
             }
             restrictedDelete(fileName);
             writeObject(Stage_File,stage);
-            writeContentsBySha1(commit_sha1,commit);
+            //head->new_commit
+            head.setSha1();
+            writeObject(HEAD_FILE,head);
         }
     }
     public static void log(){
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
+        //System.out.println(head.getCommit_sha1());
         Commit commit = head.getCommit();
         while(commit != null){
             commit.restoreCommit();
             System.out.println("===");
-            System.out.println("commit" + sha1(commit.toString()));
+            System.out.println("commit " + sha1(commit.toString()));
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
             commit = commit.getParent();

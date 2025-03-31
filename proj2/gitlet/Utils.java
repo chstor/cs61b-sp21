@@ -252,10 +252,10 @@ class Utils {
         return readObject(f,tClass);
     }
 
-    static void writeContentsBySha1(String sha1,Serializable object) {
-        String prefix = sha1.substring(0,2);
-        String suffix = sha1.substring(2);
-        File f = join(OBJECTS_DIR, prefix,suffix);
-        writeObject(f, object);
-    }
+//    static void writeContentsBySha1(String sha1,Serializable object) {
+//        String prefix = sha1.substring(0,2);
+//        String suffix = sha1.substring(2);
+//        File f = join(OBJECTS_DIR, prefix,suffix);
+//        writeObject(f, object);
+//    }
 }

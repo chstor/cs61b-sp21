@@ -63,7 +63,7 @@ public class Head implements Serializable {
     public void createHead() {
         File f = HEAD_FILE;
         if(f.exists()) {
-            restrictedDelete(HEAD_FILE);
+            HEAD_FILE.delete();
         }
         try {
             f.createNewFile();

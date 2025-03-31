@@ -40,7 +40,7 @@ public class Stage implements Serializable {
         }
     }
     public void createStageBlob() {
-        restrictedDelete(Stage_File);
+        Stage_File.delete();
         String s = sha1(this.toString());
         String prefix = s.substring(0,2);
         String suffix = s.substring(2);
