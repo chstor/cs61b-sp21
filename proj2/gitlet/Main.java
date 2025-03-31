@@ -46,7 +46,7 @@ public class Main {
             case "checkout":
                 if(args.length == 2) {
                     String branchName = args[1];
-                    Repository.checkoutBranch();
+                    Repository.checkoutBranch(branchName);
                 }else if(args.length == 3) {
                     fileName = args[2];
                     Repository.checkoutFile(fileName);
@@ -55,6 +55,10 @@ public class Main {
                     fileName = args[3];
                     Repository.checkoutFileByCommitId(commitId,fileName);
                 }
+                break;
+            case "branch":
+                String branchName = args[1];
+                Repository.createBranch(branchName);
                 break;
             default:
                 Utils.exitWithError(String.format("Unknown command: %s", args[0]));

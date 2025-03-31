@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 import static gitlet.Head.HEAD_FILE;
@@ -291,7 +293,7 @@ public class Repository {
             stageFiles = new TreeSet<>();
         }
 
-        List<String> fileNames = plainFilenamesIn(GITLET_DIR);
+        List<String> fileNames = plainFilenamesIn(CWD);
         System.out.println("=== Removed Files ===");
         for(String fileName : stageFiles){
             if(!fileNames.contains(fileName)){
@@ -321,15 +323,113 @@ public class Repository {
         }
     }
 
-    public static void checkoutBranch() {
+    public static void checkoutBranch(String branchName) {
+        //find branch's commit
+        Log log = readObject(LOG_File, Log.class);
+        List<String> branchBlobs = log.getBranch_blobs();
+        if(!branchBlobs.contains(branchName)){
+            System.out.println("No such branch exists.");
+            return;
+        }
 
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit commit = head.getCommit();
+        TreeMap<String, String> currentTrack = commit.getTrack();
+
+        Branch currentBranch = head.getBranch();
+        if(branchName.equals(currentBranch.getName())){
+            System.out.println("No need to checkout the current branch.");
+            return;
+        }
+
+        Branch checkoutBranch = readObject(join(REFSHEADS_DIR,branchName),Branch.class);
+        checkoutBranch.restoreBranch();
+        Commit checkoutCommit = checkoutBranch.getCommit();
+        TreeMap<String, String> checkoutTrack = checkoutCommit.getTrack();
+
+        List<String> fileNames = plainFilenamesIn(CWD);
+        for(String trackKey : checkoutTrack.keySet()){
+            //if currentTrack not this file,but checkoutTrack have
+            if(fileNames.contains(trackKey) && !currentTrack.containsKey(trackKey)){
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                return;
+            }
+        }
+
+        for(String fileName : currentTrack.keySet()){
+            File f = join(CWD, fileName);
+            if(f.exists()){
+                f.delete();
+            }
+        }
+        for(String trackKey : checkoutTrack.keySet()){
+            String context = findObjectBySha1(checkoutTrack.get(trackKey), String.class);
+            createCWDfile(trackKey,context);
+        }
+
+        //change head->branch->commit
+        head.setCommit(checkoutCommit);
+        head.setBranch(checkoutBranch);
+        head.setSha1();
+        head.createHead();
     }
 
     public static void checkoutFile(String fileName) {
-
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit commit = head.getCommit();
+        TreeMap<String, String> currentTrack = commit.getTrack();
+        if(!currentTrack.containsKey(fileName)){
+            System.out.println("File does not exist in that commit.");
+        }
+        String context = findObjectBySha1(currentTrack.get(fileName),String.class);
+        createCWDfile(fileName,context);
     }
 
     public static void checkoutFileByCommitId(String commitId, String fileName) {
+        Log log = readObject(LOG_File, Log.class);
+        List<String> commitBlobs = log.getCommit_blobs();
+        if(!commitBlobs.contains(commitId)){
+            System.out.println("No commit with that id exists.");
+        }
 
+        Commit commit = findObjectBySha1(commitId, Commit.class);
+        TreeMap<String, String> currentTrack = commit.getTrack();
+        if(!currentTrack.containsKey(fileName)){
+            System.out.println("File does not exist in that commit.");
+        }
+
+        String context = findObjectBySha1(currentTrack.get(fileName),String.class);
+        createCWDfile(fileName,context);
+    }
+
+    public static void createCWDfile(String fileName,Serializable object){
+        File f = join(CWD, fileName);
+        if(f.exists()){
+            f.delete();
+        }else{
+            try {
+                f.createNewFile();
+                writeObject(f,object);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static void createBranch(String branchName) {
+        Log log = readObject(LOG_File, Log.class);
+        List<String> branchBlobs = log.getBranch_blobs();
+        if(branchBlobs.contains(branchName)){
+            System.out.println("A branch with that name already exists.");
+            return;
+        }
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit commit = head.getCommit();
+        Branch branch = new Branch(branchName, commit);
+        branch.setSha1();
+        branch.createBranch();
     }
 }
