@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.TreeMap;
 
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
@@ -14,6 +15,7 @@ public class Head implements Serializable {
     private transient Branch branch;
     private String commit_sha1;
     private String branch_sha1;
+    private TreeMap<String,String> track = new TreeMap<>();
 
     public Head(Commit commit,Branch branch) {
         this.commit = commit;
@@ -50,6 +52,14 @@ public class Head implements Serializable {
 
     public void setBranch_sha1(String branch_sha1) {
         this.branch_sha1 = branch_sha1;
+    }
+
+    public TreeMap<String, String> getTrack() {
+        return track;
+    }
+
+    public void setTrack(TreeMap<String, String> track) {
+        this.track = track;
     }
 
     @Override

@@ -41,6 +41,7 @@ public class Log implements Serializable {
     public String toString() {
         return "Log{" +
                 "commit_blobs=" + commit_blobs +
+                ", branch_blobs=" + branch_blobs +
                 '}';
     }
 

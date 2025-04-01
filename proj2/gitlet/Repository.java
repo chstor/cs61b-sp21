@@ -132,18 +132,14 @@ public class Repository {
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         Commit commit = head.getCommit();
-        commit.restoreCommit();
-        commit.getTrack().put(fileName, sha1(context));
-        commit.createCommit();
-        head.setSha1();
-        writeObject(HEAD_FILE,head);
-
-        Log log = new Log();
-        if(log.getCommit_blobs().size()>0){
-            log.getCommit_blobs().removeLast();
+        if(!Stage_File.exists()){
+            TreeMap<String, String> track = commit.getTrack();
+            for(Map.Entry<String, String> entry : track.entrySet()){
+                head.getTrack().put(entry.getKey(),entry.getValue());
+            }
         }
-        log.getCommit_blobs().add(sha1(commit.toString()));
-        log.createLog();
+        head.getTrack().put(fileName, sha1(context));
+        writeObject(HEAD_FILE,head);
     }
 
     public static void commit(String message){
@@ -168,7 +164,7 @@ public class Repository {
         head.restoreHead();
         Commit parent_commit = head.getCommit();
         parent_commit.restoreCommit();
-        TreeMap<String,String> track = parent_commit.getTrack();
+        TreeMap<String,String> track = head.getTrack();
         //branch->commit
         Branch branch = head.getBranch();
         branch.restoreBranch();
@@ -208,8 +204,8 @@ public class Repository {
 
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
-        Commit commit = head.getCommit();
-        TreeMap<String, String> track = commit.getTrack();
+
+        TreeMap<String, String> track = head.getTrack();
 
         if(track.containsKey(fileName)){
             track.remove(fileName);
@@ -218,8 +214,6 @@ public class Repository {
             }
             restrictedDelete(fileName);
             writeObject(Stage_File,stage);
-            //head->new_commit
-            head.setSha1();
             writeObject(HEAD_FILE,head);
         }
     }
@@ -276,8 +270,7 @@ public class Repository {
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
 
-        Commit commit = head.getCommit();
-        TreeMap<String, String> track = commit.getTrack();
+        TreeMap<String, String> track = head.getTrack();
         Branch currentBranch = head.getBranch();
 
         Log log = readObject(LOG_File, Log.class);
@@ -299,6 +292,9 @@ public class Repository {
             stageFiles = stage.getBlobs().keySet();
         }else{
             stageFiles = new TreeSet<>();
+        }
+        for(String fileName : stageFiles){
+            System.out.println(fileName);
         }
 
         List<String> fileNames = plainFilenamesIn(CWD);
@@ -379,6 +375,7 @@ public class Repository {
         //change head->branch->commit
         head.setCommit(checkoutCommit);
         head.setBranch(checkoutBranch);
+        head.setTrack(checkoutTrack);
         head.setSha1();
         head.createHead();
     }
@@ -409,6 +406,7 @@ public class Repository {
         }
 
         String context = findObjectBySha1(currentTrack.get(fileName),String.class);
+        //System.out.println(context);
         createCWDfile(fileName,context);
     }
 
