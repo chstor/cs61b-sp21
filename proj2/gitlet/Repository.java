@@ -170,7 +170,7 @@ public class Repository {
         branch.restoreBranch();
 
         //create commit class
-        Commit commit = new Commit(message,new Date(),parent_commit,stage,track);
+        Commit commit = new Commit(message,new Date(),parent_commit,stage,track,head.getBranch_sha1());
         commit.setSha1();
         commit.createCommit();
 
@@ -436,5 +436,71 @@ public class Repository {
         Branch branch = new Branch(branchName, commit);
         branch.setSha1();
         branch.createBranch();
+    }
+
+    public static void rmBranch(String branchName) {
+        Log log = readObject(LOG_File, Log.class);
+        List<String> branchBlobs = log.getBranch_blobs();
+        if(!branchBlobs.contains(branchName)){
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        if(head.getBranch().getName().equals(branchName)){
+            System.out.println("Cannot remove the current branch.");
+            return;
+        }
+        File f = join(REFSHEADS_DIR,branchName);
+        f.delete();
+    }
+
+    public static void resetByCommitId(String commitId) {
+        //find branch's commit
+        Log log = readObject(LOG_File, Log.class);
+        List<String> commitBlobs = log.getCommit_blobs();
+        if(!commitBlobs.contains(commitId)){
+            System.out.println("No commit with that id exists.");
+            return;
+        }
+
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit commit = head.getCommit();
+        TreeMap<String, String> currentTrack = commit.getTrack();
+
+        Commit checkoutCommit = findObjectBySha1(commitId,Commit.class);
+        TreeMap<String, String> checkoutTrack = checkoutCommit.getTrack();
+
+        List<String> fileNames = plainFilenamesIn(CWD);
+        for(String trackKey : checkoutTrack.keySet()){
+            //if currentTrack not this file,but checkoutTrack have
+            if(fileNames.contains(trackKey) && !currentTrack.containsKey(trackKey)){
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                return;
+            }
+        }
+
+        for(String fileName : currentTrack.keySet()){
+            File f = join(CWD, fileName);
+            if(f.exists()){
+                f.delete();
+            }
+        }
+        for(String trackKey : checkoutTrack.keySet()){
+            String context = findObjectBySha1(checkoutTrack.get(trackKey), String.class);
+            createCWDfile(trackKey,context);
+        }
+
+        //change head->branch->commit
+        head.setCommit(checkoutCommit);
+        head.setBranch(findObjectBySha1(commit.getBranch_sha1(), Branch.class));
+        head.setTrack(checkoutTrack);
+        head.setSha1();
+        head.createHead();
+    }
+
+    public static void merge(String branchName) {
+
     }
 }

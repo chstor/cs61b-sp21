@@ -60,6 +60,18 @@ public class Main {
                 String branchName = args[1];
                 Repository.createBranch(branchName);
                 break;
+            case "rm-branch":
+                branchName = args[1];
+                Repository.rmBranch(branchName);
+                break;
+            case "reset":
+                String commitId = args[1];
+                Repository.resetByCommitId(commitId);
+                break;
+            case "merge":
+                branchName = args[1];
+                Repository.merge(branchName);
+                break;
             default:
                 Utils.exitWithError(String.format("Unknown command: %s", args[0]));
         }

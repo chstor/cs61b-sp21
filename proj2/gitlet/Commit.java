@@ -39,17 +39,19 @@ public class Commit implements Serializable {
     private transient Stage commit_stage;
     private String parent_sha1;
     private String commit_stage_sha1;
+    private String branch_sha1;
 
     public Commit() {
         track = new TreeMap<>();
     }
 
-    public Commit(String message, Date date, Commit parent, Stage commit_stage,TreeMap<String,String> track) {
+    public Commit(String message, Date date, Commit parent, Stage commit_stage,TreeMap<String,String> track,String branch_sha1) {
         this.message = message;
         this.date = date;
         this.parent = parent;
         this.commit_stage = commit_stage;
         this.track = track;
+        this.branch_sha1 = branch_sha1;
     }
 
     public String getMessage() {
@@ -118,14 +120,24 @@ public class Commit implements Serializable {
         this.merge_message = merge_message;
     }
 
+    public String getBranch_sha1() {
+        return branch_sha1;
+    }
+
+    public void setBranch_sha1(String branch_sha1) {
+        this.branch_sha1 = branch_sha1;
+    }
+
     @Override
     public String toString() {
         return "Commit{" +
                 "message='" + message + '\'' +
                 ", date=" + date +
+                ", merge_message='" + merge_message + '\'' +
                 ", track=" + track +
                 ", parent_sha1='" + parent_sha1 + '\'' +
                 ", commit_stage_sha1='" + commit_stage_sha1 + '\'' +
+                ", branch_sha1='" + branch_sha1 + '\'' +
                 '}';
     }
 
