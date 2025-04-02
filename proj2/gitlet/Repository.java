@@ -199,10 +199,9 @@ public class Repository {
         }
         if(stage.getBlobs().containsKey(fileName)) {
             stage.getBlobs().remove(fileName);
+            writeObject(Stage_File,stage);
+            return;
         }
-        stage.getRmblobs().add(fileName);
-        writeObject(Stage_File,stage);
-
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         TreeMap<String, String> track = head.getTrack();
@@ -210,11 +209,12 @@ public class Repository {
             track.remove(fileName);
             File f = join(CWD, fileName);
             f.delete();
-            writeObject(HEAD_FILE,head);
+            stage.getRmblobs().add(fileName);
         }else{
             System.out.println("No reason to remove the file.");
         }
-
+        writeObject(HEAD_FILE,head);
+        writeObject(Stage_File,stage);
     }
 
     public static void log(){
