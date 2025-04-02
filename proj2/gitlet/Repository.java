@@ -125,11 +125,13 @@ public class Repository {
         if(commit.getTrack().containsKey(fileName)) {
             String text = findObjectBySha1(commit.getTrack().get(fileName), String.class);
             if(text.equals(context)) {
+                writeObject(Stage_File,stage);
                 return;
             }
         }
-        
+
         if(stage.getRmblobs().contains(fileName)){
+            writeObject(Stage_File,stage);
             return;
         }
 
