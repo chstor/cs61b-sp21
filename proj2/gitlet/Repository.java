@@ -199,10 +199,9 @@ public class Repository {
         }
         if(stage.getBlobs().containsKey(fileName)) {
             stage.getBlobs().remove(fileName);
-            stage.getRmblobs().add(fileName);
-            writeObject(Stage_File,stage);
-            return;
         }
+        stage.getRmblobs().add(fileName);
+        writeObject(Stage_File,stage);
 
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
