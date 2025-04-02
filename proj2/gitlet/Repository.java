@@ -115,6 +115,12 @@ public class Repository {
 
         //read file.context
         String context = readContentsAsString(f);
+        //add file to track_tree
+        addToTrack(fileName,context);
+
+        if(stage.getRmblobs().contains(fileName)){
+            return;
+        }
 
         //put fileName and sha1(context)
         TreeMap<String, String> blobs = stage.getBlobs();
@@ -124,8 +130,6 @@ public class Repository {
 
         writeObject(Stage_File,stage);
 
-        //add file to track_tree
-        addToTrack(fileName,context);
     }
 
     private static void addToTrack(String fileName, String context) {
@@ -305,7 +309,9 @@ public class Repository {
         List<String> fileNames = plainFilenamesIn(CWD);
         System.out.println("=== Removed Files ===");
         for(String fileName : stage.getRmblobs()){
-            System.out.println(fileName);
+            if(!fileNames.contains(fileName)){
+                System.out.println(fileName);
+            }
         }
         System.out.println();
 
