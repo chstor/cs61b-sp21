@@ -191,33 +191,31 @@ public class Repository {
     }
 
     public static void rm(String fileName) {
-        File f = join(CWD, fileName);
-        if(!f.exists()) {
-            System.out.println("File does not exist.");
-            return;
+        Stage stage;
+        if(Stage_File.exists()){
+            stage = readObject(Stage_File, Stage.class);
+        }else{
+            stage = new Stage();
         }
-
-        if(!Stage_File.exists()){
-            System.out.println("No changes added to the commit.");
-            return;
+        if(stage.getBlobs().containsKey(fileName)) {
+            stage.getBlobs().remove(fileName);
+            writeObject(Stage_File,stage);
         }
-        Stage stage = readObject(Stage_File, Stage.class);
 
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
-
         TreeMap<String, String> track = head.getTrack();
-
         if(track.containsKey(fileName)){
             track.remove(fileName);
-            if(stage.getBlobs().containsKey(fileName)) {
-                stage.getBlobs().remove(fileName);
-            }
-            restrictedDelete(fileName);
-            writeObject(Stage_File,stage);
+            File f = join(CWD, fileName);
+            f.delete();
             writeObject(HEAD_FILE,head);
+        }else{
+            System.out.println("No reason to remove the file.");
         }
+
     }
+
     public static void log(){
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
