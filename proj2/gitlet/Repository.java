@@ -288,6 +288,7 @@ public class Repository {
             }
             System.out.println(branch.getName());
         }
+        System.out.println();
 
         System.out.println("=== Staged Files ===");
         Set<String> trackFiles = track.keySet();
@@ -301,6 +302,7 @@ public class Repository {
         for(String fileName : stageFiles){
             System.out.println(fileName);
         }
+        System.out.println();
 
         List<String> fileNames = plainFilenamesIn(CWD);
         System.out.println("=== Removed Files ===");
@@ -309,6 +311,7 @@ public class Repository {
                 System.out.println(fileName);
             }
         }
+        System.out.println();
 
         System.out.println("=== Modifications Not Staged For Commit ===");
         for(String fileName : trackFiles){
@@ -323,6 +326,7 @@ public class Repository {
                 }
             }
         }
+        System.out.println();
 
         System.out.println("=== Untracked Files ===");
         for(String fileName : fileNames){
@@ -330,6 +334,7 @@ public class Repository {
                 System.out.println(fileName);
             }
         }
+        System.out.println();
     }
 
     public static void checkoutBranch(String branchName) {
