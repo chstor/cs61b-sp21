@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
@@ -12,9 +13,10 @@ public class Stage implements Serializable {
     public static final File Stage_File = join(GITLET_DIR, "index");
 
     private TreeMap<String,String> blobs;
-
+    private TreeSet<String> rmblobs;
     public Stage() {
         blobs = new TreeMap<>();
+        rmblobs = new TreeSet<>();
     }
 
     public TreeMap<String, String> getBlobs() {
@@ -25,10 +27,19 @@ public class Stage implements Serializable {
         this.blobs = blobs;
     }
 
+    public TreeSet<String> getRmblobs() {
+        return rmblobs;
+    }
+
+    public void setRmblobs(TreeSet<String> rmblobs) {
+        this.rmblobs = rmblobs;
+    }
+
     @Override
     public String toString() {
         return "Stage{" +
                 "blobs=" + blobs +
+                ", rmblobs=" + rmblobs +
                 '}';
     }
 

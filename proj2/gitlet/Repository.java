@@ -199,7 +199,9 @@ public class Repository {
         }
         if(stage.getBlobs().containsKey(fileName)) {
             stage.getBlobs().remove(fileName);
+            stage.getRmblobs().add(fileName);
             writeObject(Stage_File,stage);
+            return;
         }
 
         Head head = readObject(HEAD_FILE, Head.class);
@@ -290,24 +292,21 @@ public class Repository {
 
         System.out.println("=== Staged Files ===");
         Set<String> trackFiles = track.keySet();
-        Set<String> stageFiles;
+        Stage stage;
         if(Stage_File.exists()){
-            Stage stage = readObject(Stage_File, Stage.class);
-            stageFiles = stage.getBlobs().keySet();
+            stage = readObject(Stage_File, Stage.class);
         }else{
-            stageFiles = new TreeSet<>();
+            stage = new Stage();
         }
-        for(String fileName : stageFiles){
+        for(String fileName : stage.getBlobs().keySet()){
             System.out.println(fileName);
         }
         System.out.println();
 
         List<String> fileNames = plainFilenamesIn(CWD);
         System.out.println("=== Removed Files ===");
-        for(String fileName : stageFiles){
-            if(!fileNames.contains(fileName)){
-                System.out.println(fileName);
-            }
+        for(String fileName : stage.getRmblobs()){
+            System.out.println(fileName);
         }
         System.out.println();
 
