@@ -102,6 +102,19 @@ public class Repository {
             System.out.println("File does not exist.");
             return;
         }
+        //read file.context
+        String context = readContentsAsString(f);
+
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit commit = head.getCommit();
+        if(commit.getTrack().containsKey(fileName)) {
+            String text = findObjectBySha1(commit.getTrack().get(fileName), String.class);
+            if(text.equals(context)) {
+                return;
+            }
+        }
+
         //if stageFile is not exist
         Stage stage;
         if(!Stage_File.exists()){
@@ -113,8 +126,6 @@ public class Repository {
             stage = readObject(Stage_File, Stage.class);
         }
 
-        //read file.context
-        String context = readContentsAsString(f);
         //add file to track_tree
         addToTrack(fileName,context);
 
