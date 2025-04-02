@@ -105,16 +105,6 @@ public class Repository {
         //read file.context
         String context = readContentsAsString(f);
 
-        Head head = readObject(HEAD_FILE, Head.class);
-        head.restoreHead();
-        Commit commit = head.getCommit();
-        if(commit.getTrack().containsKey(fileName)) {
-            String text = findObjectBySha1(commit.getTrack().get(fileName), String.class);
-            if(text.equals(context)) {
-                return;
-            }
-        }
-
         //if stageFile is not exist
         Stage stage;
         if(!Stage_File.exists()){
@@ -129,6 +119,16 @@ public class Repository {
         //add file to track_tree
         addToTrack(fileName,context);
 
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit commit = head.getCommit();
+        if(commit.getTrack().containsKey(fileName)) {
+            String text = findObjectBySha1(commit.getTrack().get(fileName), String.class);
+            if(text.equals(context)) {
+                return;
+            }
+        }
+        
         if(stage.getRmblobs().contains(fileName)){
             return;
         }
