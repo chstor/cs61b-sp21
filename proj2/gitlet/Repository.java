@@ -232,7 +232,7 @@ public class Repository {
             }
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
-            if(commit.getParent()!=null && !commit.getParent().isEmpty()){
+            if(!commit.getParent().isEmpty()){
                 commit = commit.getParent().get(0);
             }else{
                 commit = null;
@@ -461,7 +461,7 @@ public class Repository {
     }
 
     public static void resetByCommitId(String commitId) {
-        //find branch's commit
+        //find commitId
         Log log = readObject(LOG_File, Log.class);
         List<String> commitBlobs = log.getCommit_blobs();
         if(!commitBlobs.contains(commitId)){
@@ -506,6 +506,186 @@ public class Repository {
     }
 
     public static void merge(String branchName) {
+        //If there are staged additions or removals present
+        if(Stage_File.exists()){
+            System.out.println("You have uncommitted changes.");
+            return;
+        }
 
+        //A branch with that name does not exist.
+        Log log = readObject(LOG_File, Log.class);
+        LinkedList<String> branchBlobs = log.getBranch_blobs();
+        if(!branchBlobs.contains(branchName)){
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+
+        //Cannot merge a branch with itself.
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Branch currentBranch = head.getBranch();
+        currentBranch.restoreBranch();
+        Commit currentCommit = currentBranch.getCommit();
+        currentCommit.restoreCommit();
+        if(branchName.equals(currentBranch.getName())){
+            System.out.println("Cannot merge a branch with itself.");
+            return;
+        }
+
+        Branch checkoutBranch = readObject(join(REFSHEADS_DIR,branchName),Branch.class);
+        checkoutBranch.restoreBranch();
+        Commit checkoutCommit = checkoutBranch.getCommit();
+        checkoutCommit.restoreCommit();
+        TreeMap<String, String> checkoutTrack = checkoutCommit.getTrack();
+        Commit commit = head.getCommit();
+        TreeMap<String, String> currentTrack = commit.getTrack();
+
+        List<String> fileNames = plainFilenamesIn(CWD);
+        for(String trackKey : checkoutTrack.keySet()){
+            //if currentTrack not this file,but checkoutTrack have
+            if(fileNames.contains(trackKey) && !currentTrack.containsKey(trackKey)){
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                return;
+            }
+        }
+
+        //find split point
+        Commit split_commit = findlca(currentCommit,checkoutCommit);
+        split_commit.restoreCommit();
+        if(split_commit.equals(checkoutCommit)){
+            System.out.println("Given branch is an ancestor of the current branch.");
+            return;
+        }
+        if(split_commit.equals(currentCommit)){
+            currentBranch.setCommit_sha1(sha1(checkoutCommit.toString()));
+            currentBranch.createBranch();
+            System.out.println("Current branch fast-forwarded.");
+            return;
+        }
+
+        TreeMap<String, String> splitCommitTrack = split_commit.getTrack();
+        TreeMap<String, String> currentCommitTrack = currentCommit.getTrack();
+        /*
+        * if a file is modified in the given branch
+        * since the split point this means the version of the file
+        * as it exists in the commit at the front of the given branch has different content
+        * from the version of the file at the split point.
+        * */
+        for(String fileName : splitCommitTrack.keySet()){
+            if(currentCommitTrack.containsKey(fileName) && checkoutTrack.containsKey(fileName)){
+                String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
+                String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
+                String splitCommitContext = findObjectBySha1(splitCommitTrack.get(fileName), String.class);
+                if(splitCommitContext.equals(currentCommitContext) &&  !checkoutCommitContext.equals(currentCommitContext)){
+                    createCWDfile(fileName,checkoutCommitContext);
+                }
+            }
+            if(currentCommitTrack.containsKey(fileName) && !checkoutTrack.containsKey(fileName)){
+                String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
+                String splitCommitContext = findObjectBySha1(splitCommitTrack.get(fileName), String.class);
+                if(splitCommitContext.equals(currentCommitContext)){
+                    rm(fileName);
+                }
+            }
+        }
+
+        /*
+        * Any files that were not present at the split point
+        * and are present only in the given branch should be checked out and staged.
+        * */
+        for(String fileName : checkoutTrack.keySet()){
+            if(!splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName)){
+                String context = checkoutTrack.get(fileName);
+                createCWDfile(fileName,context);
+                add(fileName);
+            }
+            if(currentCommitTrack.containsKey(fileName)){
+                String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
+                String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
+                if(!checkoutCommitContext.equals(currentCommitContext)){
+                    currentCommitContext = "<<<<<<< HEAD"
+                                            + currentCommitContext
+                                            + "======="
+                                            + checkoutCommitContext
+                                            + ">>>>>>>";
+                    createCWDfile(fileName,currentCommitContext);
+                    System.out.println("Encountered a merge conflict.");
+                    return;
+                }
+            }
+        }
+        commitMerge(String.format("Merged %s into %s.", branchName,currentBranch.getName()),checkoutCommit);
     }
+
+    public static void commitMerge(String message,Commit checkoutCommit){
+        //if message is blank
+        if(message.equals("")){
+            System.out.println("Please enter a commit message.");
+            return;
+        }
+        //if stage_file is not exist
+        if(!Stage_File.exists()){
+            System.out.println("No changes added to the commit.");
+            return;
+        }
+        //read stage_file to create stage class
+        Stage stage = readObject(Stage_File, Stage.class);
+
+        //delete stage_file and create stageBlob
+        stage.createStageBlob();
+
+        //head->commit
+        Head head = readObject(HEAD_FILE, Head.class);
+        head.restoreHead();
+        Commit parent_commit = head.getCommit();
+        parent_commit.restoreCommit();
+        TreeMap<String,String> track = head.getTrack();
+        //branch->commit
+        Branch branch = head.getBranch();
+        branch.restoreBranch();
+
+        //create commit class
+        Commit commit = new Commit(message,new Date(),stage,track,head.getBranch_sha1());
+        commit.getParent_sha1().add(sha1(parent_commit.toString()));
+        commit.getParent_sha1().add(sha1(checkoutCommit.toString()));
+        commit.setSha1();
+        commit.createCommit();
+
+        //if head->commit == branch->commit
+        if(head.getCommit_sha1().equals(branch.getCommit_sha1())){
+            branch.setCommit_sha1(sha1(commit.toString()));
+            //change branch
+            branch.createBranch();
+        }
+        //change head
+        head.setCommit_sha1(sha1(commit.toString()));
+        head.createHead();
+
+        Log log = readObject(LOG_File, Log.class);
+        log.getCommit_blobs().add(sha1(commit.toString()));
+        log.createLog();
+    }
+    private static Commit findlca(Commit commitA, Commit commitB) {
+        //bfs commmitA
+        Set<String> visited = new HashSet<>();
+        Queue<Commit> queue = new LinkedList<>();
+        queue.offer(commitA);
+        while(!queue.isEmpty()){
+            Commit commit = queue.poll();
+            visited.add(sha1(commit));
+            commit.restoreCommit();
+            queue.addAll(commit.getParent());
+        }
+        queue.offer(commitB);
+        while(!queue.isEmpty()){
+            Commit commit = queue.poll();
+            commit.restoreCommit();
+            if(visited.contains(sha1(commit))){
+                return commit;
+            }
+            queue.addAll(commit.getParent());
+        }
+        return null;
+    }
+
 }
