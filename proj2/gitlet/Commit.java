@@ -6,10 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import java.util.*;
 
 import static gitlet.Utils.*;
 import static gitlet.Repository.*;
@@ -33,22 +30,21 @@ public class Commit implements Serializable {
     private String message;
     private Date date;
     private String merge_message;
-    private TreeMap<String,String> track;
+    private TreeMap<String,String> track = new TreeMap<>();;
 
-    private transient Commit parent;
+    private transient ArrayList<Commit> parent;
     private transient Stage commit_stage;
-    private String parent_sha1;
+    private ArrayList<String> parent_sha1 = new ArrayList<>();
     private String commit_stage_sha1;
     private String branch_sha1;
 
     public Commit() {
-        track = new TreeMap<>();
+
     }
 
-    public Commit(String message, Date date, Commit parent, Stage commit_stage,TreeMap<String,String> track,String branch_sha1) {
+    public Commit(String message, Date date, Stage commit_stage,TreeMap<String,String> track,String branch_sha1) {
         this.message = message;
         this.date = date;
-        this.parent = parent;
         this.commit_stage = commit_stage;
         this.track = track;
         this.branch_sha1 = branch_sha1;
@@ -72,19 +68,19 @@ public class Commit implements Serializable {
         this.date = date;
     }
 
-    public Commit getParent() {
+    public ArrayList<Commit> getParent() {
         return parent;
     }
 
-    public void setParent(Commit parent) {
+    public void setParent(ArrayList<Commit> parent) {
         this.parent = parent;
     }
 
-    public String getParent_sha1() {
+    public ArrayList<String> getParent_sha1() {
         return parent_sha1;
     }
 
-    public void setParent_sha1(String parent_sha1) {
+    public void setParent_sha1(ArrayList<String> parent_sha1) {
         this.parent_sha1 = parent_sha1;
     }
 
@@ -157,7 +153,10 @@ public class Commit implements Serializable {
     }
     public void restoreCommit() {
         if(this.parent_sha1 != null){
-            this.parent = findObjectBySha1(this.parent_sha1, Commit.class);
+            this.parent = new ArrayList<>();
+            for(String parent_sha1: this.parent_sha1) {
+                this.parent.add(findObjectBySha1(parent_sha1,Commit.class));
+            }
         }
         if(this.commit_stage != null){
             this.commit_stage = findObjectBySha1(this.commit_stage_sha1,Stage.class);
@@ -166,7 +165,12 @@ public class Commit implements Serializable {
 
     public void setSha1(){
         this.commit_stage_sha1 = sha1(this.commit_stage.toString());
-        this.parent_sha1 = sha1(this.parent.toString());
+        if(this.parent != null){
+            for(Commit commit : this.parent){
+                String sha1 = sha1(commit.toString());
+                this.parent_sha1.add(sha1);
+            }
+        }
     }
 
 }

@@ -170,7 +170,8 @@ public class Repository {
         branch.restoreBranch();
 
         //create commit class
-        Commit commit = new Commit(message,new Date(),parent_commit,stage,track,head.getBranch_sha1());
+        Commit commit = new Commit(message,new Date(),stage,track,head.getBranch_sha1());
+        commit.getParent_sha1().add(sha1(parent_commit.toString()));
         commit.setSha1();
         commit.createCommit();
 
@@ -231,7 +232,11 @@ public class Repository {
             }
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
-            commit = commit.getParent();
+            if(commit.getParent()!=null && !commit.getParent().isEmpty()){
+                commit = commit.getParent().get(0);
+            }else{
+                commit = null;
+            }
             System.out.println();
         }
     }
