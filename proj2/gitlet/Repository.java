@@ -215,14 +215,16 @@ public class Repository {
         }else{
             stage = new Stage();
         }
-        if(stage.getBlobs().containsKey(fileName)) {
-            stage.getBlobs().remove(fileName);
-            writeObject(Stage_File,stage);
-            return;
-        }
         Head head = readObject(HEAD_FILE, Head.class);
         head.restoreHead();
         TreeMap<String, String> track = head.getTrack();
+
+        if(stage.getBlobs().containsKey(fileName)) {
+            stage.getBlobs().remove(fileName);
+            writeObject(Stage_File,stage);
+            track.remove(fileName);
+            return;
+        }
         if(track.containsKey(fileName)){
             track.remove(fileName);
             File f = join(CWD, fileName);
@@ -294,6 +296,7 @@ public class Repository {
         head.restoreHead();
 
         TreeMap<String, String> track = head.getTrack();
+        //System.out.println(findObjectBySha1(track.get("f.txt"), String.class));
         Branch currentBranch = head.getBranch();
 
         Log log = readObject(LOG_File, Log.class);
@@ -338,6 +341,7 @@ public class Repository {
                 String context = readContentsAsString(f);
                 String track_context= findObjectBySha1(track.get(fileName),String.class);
                 if(!context.equals(track_context)){
+                    //System.out.println(fileName + "\n" + track_context + "\n" + context);
                     System.out.println(fileName + "(modified)");
                 }
             }
@@ -595,7 +599,7 @@ public class Repository {
         }
 
         TreeMap<String, String> splitCommitTrack = split_commit.getTrack();
-        TreeMap<String, String> currentCommitTrack = currentCommit.getTrack();
+        TreeMap<String, String> currentCommitTrack = head.getTrack();
 //        System.out.println(splitCommitTrack);
 //        System.out.println(currentCommitTrack);
 //        System.out.println(checkoutTrack);
@@ -611,6 +615,7 @@ public class Repository {
                 String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
                 String splitCommitContext = findObjectBySha1(splitCommitTrack.get(fileName), String.class);
                 if(splitCommitContext.equals(currentCommitContext) &&  !checkoutCommitContext.equals(currentCommitContext)){
+                    //currentCommitTrack.put(fileName, checkoutTrack.get(fileName));
                     createCWDfile(fileName,checkoutCommitContext);
                 }
             }
@@ -631,8 +636,10 @@ public class Repository {
             //System.out.println(fileName);
             if(!splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName)){
                 String context = findObjectBySha1(checkoutTrack.get(fileName),String.class);
+                //currentCommitTrack.put(fileName, checkoutTrack.get(fileName));
                 createCWDfile(fileName,context);
                 add(fileName);
+                continue;
             }
             if(currentCommitTrack.containsKey(fileName)){
                 String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
@@ -640,9 +647,15 @@ public class Repository {
                 if(!checkoutCommitContext.equals(currentCommitContext)){
                     currentCommitContext = "<<<<<<< HEAD\n"
                                             + currentCommitContext
-                                            + "=======\n"
+                                            + "\n=======\n"
                                             + checkoutCommitContext
-                                            + ">>>>>>>";
+                                            + "\n>>>>>>>";
+                    Blob blob = new Blob(currentCommitContext);
+                    blob.createBlob();
+                    currentCommitTrack.put(fileName,sha1(currentCommitContext));
+                    //head.setCommit(currentCommit);
+                    writeObject(HEAD_FILE,head);
+
                     createCWDfile(fileName,currentCommitContext);
                     //System.out.println(currentCommitContext);
                     System.out.println("Encountered a merge conflict.");
