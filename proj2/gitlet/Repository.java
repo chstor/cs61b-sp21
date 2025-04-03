@@ -217,6 +217,7 @@ public class Repository {
         }
         if(stage.getBlobs().containsKey(fileName)) {
             stage.getBlobs().remove(fileName);
+            stage.getRmblobs().add(fileName);
             writeObject(Stage_File,stage);
             return;
         }
@@ -323,7 +324,7 @@ public class Repository {
         List<String> fileNames = plainFilenamesIn(CWD);
         System.out.println("=== Removed Files ===");
         for(String fileName : stage.getRmblobs()){
-            if(!fileNames.contains(fileName)){
+            if(fileNames.contains(fileName)){
                 System.out.println(fileName);
             }
         }
@@ -332,7 +333,9 @@ public class Repository {
         System.out.println("=== Modifications Not Staged For Commit ===");
         for(String fileName : trackFiles){
             if(!fileNames.contains(fileName)){
-                System.out.println(fileName + "(deleted)");
+                if(!stage.getRmblobs().contains(fileName)){
+                    System.out.println(fileName + "(deleted)");
+                }
             }else{
                 File f = join(CWD,fileName);
                 String context = readContentsAsString(f);
@@ -404,6 +407,10 @@ public class Repository {
         head.setTrack(checkoutTrack);
         head.setSha1();
         head.createHead();
+        if(Stage_File.exists()){
+            Stage stage = new Stage();
+            writeObject(Stage_File,stage);
+        }
     }
 
     public static void checkoutFile(String fileName) {
@@ -592,7 +599,9 @@ public class Repository {
 
         TreeMap<String, String> splitCommitTrack = split_commit.getTrack();
         TreeMap<String, String> currentCommitTrack = currentCommit.getTrack();
-
+//        System.out.println(splitCommitTrack);
+//        System.out.println(currentCommitTrack);
+//        System.out.println(checkoutTrack);
         /*
         * if a file is modified in the given branch
         * since the split point this means the version of the file
@@ -622,6 +631,7 @@ public class Repository {
         * and are present only in the given branch should be checked out and staged.
         * */
         for(String fileName : checkoutTrack.keySet()){
+            //System.out.println(fileName);
             if(!splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName)){
                 String context = findObjectBySha1(checkoutTrack.get(fileName),String.class);
                 createCWDfile(fileName,context);
@@ -631,14 +641,14 @@ public class Repository {
                 String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
                 String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
                 if(!checkoutCommitContext.equals(currentCommitContext)){
-                    currentCommitContext = "<<<<<<< HEAD"
+                    currentCommitContext = "<<<<<<< HEAD\n"
                                             + currentCommitContext
-                                            + "======="
+                                            + "=======\n"
                                             + checkoutCommitContext
                                             + ">>>>>>>";
                     createCWDfile(fileName,currentCommitContext);
+                    //System.out.println(currentCommitContext);
                     System.out.println("Encountered a merge conflict.");
-                    return;
                 }
             }
         }
