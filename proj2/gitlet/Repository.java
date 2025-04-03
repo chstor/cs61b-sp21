@@ -647,9 +647,9 @@ public class Repository {
                 if(!checkoutCommitContext.equals(currentCommitContext)){
                     currentCommitContext = "<<<<<<< HEAD\n"
                                             + currentCommitContext
-                                            + "\n=======\n"
+                                            + "=======\n"
                                             + checkoutCommitContext
-                                            + "\n>>>>>>>";
+                                            + ">>>>>>>";
                     Blob blob = new Blob(currentCommitContext);
                     blob.createBlob();
                     currentCommitTrack.put(fileName,sha1(currentCommitContext));
