@@ -85,7 +85,7 @@ public class Repository {
         * */
         Log log = new Log();
         log.getCommit_blobs().add(sha1(commit.toString()));
-        log.getBranch_blobs().add(sha1(branch.toString()));
+        log.getBranch_blobs().add(branch.getName());
         log.createLog();
 //        head = readObject(HEAD_FILE, Head.class);
 //        head.restoreHead();
@@ -269,6 +269,7 @@ public class Repository {
             }
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
+            System.out.println();
         }
     }
     public static void find(String message) {
@@ -279,7 +280,7 @@ public class Repository {
             Commit commit = findObjectBySha1(commitBlob, Commit.class);
             if(commit.getMessage().equals(message)){
                 found = true;
-                System.out.printf(commitBlob);
+                System.out.println(commitBlob);
             }
         }
         if(!found){
@@ -296,13 +297,12 @@ public class Repository {
 
         Log log = readObject(LOG_File, Log.class);
         System.out.println("=== Branches ===");
-        List<String> branchBlobs = log.getBranch_blobs();
-        for(String branchBlob : branchBlobs){
-            Branch branch = findObjectBySha1(branchBlob, Branch.class);
-            if(currentBranch.getName().equals(branch.getName())){
+        List<String> branchNames = log.getBranch_blobs();
+        for(String branchName : branchNames){
+            if(currentBranch.getName().equals(branchName)){
                 System.out.print("*");
             }
-            System.out.println(branch.getName());
+            System.out.println(branchName);
         }
         System.out.println();
 
@@ -422,12 +422,14 @@ public class Repository {
         List<String> commitBlobs = log.getCommit_blobs();
         if(!commitBlobs.contains(commitId)){
             System.out.println("No commit with that id exists.");
+            return;
         }
 
         Commit commit = findObjectBySha1(commitId, Commit.class);
         TreeMap<String, String> currentTrack = commit.getTrack();
         if(!currentTrack.containsKey(fileName)){
             System.out.println("File does not exist in that commit.");
+            return;
         }
 
         String context = findObjectBySha1(currentTrack.get(fileName),String.class);
@@ -461,6 +463,8 @@ public class Repository {
         Branch branch = new Branch(branchName, commit);
         branch.setSha1();
         branch.createBranch();
+        log.getBranch_blobs().add(branchName);
+        log.createLog();
     }
 
     public static void rmBranch(String branchName) {

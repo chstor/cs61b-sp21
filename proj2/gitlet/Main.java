@@ -52,6 +52,10 @@ public class Main {
                     Repository.checkoutFile(fileName);
                 }else{
                     String commitId = args[1];
+                    if(!args[2].equals("--")){
+                        System.out.println("Incorrect operands.");
+                        return;
+                    }
                     fileName = args[3];
                     Repository.checkoutFileByCommitId(commitId,fileName);
                 }
