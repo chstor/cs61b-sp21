@@ -600,6 +600,11 @@ public class Repository {
 
         TreeMap<String, String> splitCommitTrack = split_commit.getTrack();
         TreeMap<String, String> currentCommitTrack = head.getTrack();
+        Set<String> allTrackKeys = new HashSet<>();
+        allTrackKeys.addAll(checkoutTrack.keySet());
+        allTrackKeys.addAll(currentTrack.keySet());
+        allTrackKeys.addAll(splitCommitTrack.keySet());
+
 //        System.out.println(splitCommitTrack);
 //        System.out.println(currentCommitTrack);
 //        System.out.println(checkoutTrack);
@@ -609,73 +614,92 @@ public class Repository {
         * as it exists in the commit at the front of the given branch has different content
         * from the version of the file at the split point.
         * */
-        for(String fileName : splitCommitTrack.keySet()){
-            if(currentCommitTrack.containsKey(fileName) && checkoutTrack.containsKey(fileName)){
+        //TODO change logic
+        boolean flag = true;
+        for(String fileName : allTrackKeys) {
+            //one
+            if (splitCommitTrack.containsKey(fileName) && currentCommitTrack.containsKey(fileName) && checkoutTrack.containsKey(fileName)) {
                 String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
                 String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
                 String splitCommitContext = findObjectBySha1(splitCommitTrack.get(fileName), String.class);
-                if(splitCommitContext.equals(currentCommitContext) &&  !checkoutCommitContext.equals(currentCommitContext)){
-                    //currentCommitTrack.put(fileName, checkoutTrack.get(fileName));
-                    createCWDfile(fileName,checkoutCommitContext);
+                if (splitCommitContext.equals(currentCommitContext) && !checkoutCommitContext.equals(currentCommitContext)) {
+                    createCWDfile(fileName, checkoutCommitContext);
+                    add(fileName);
                 }
             }
-            if(currentCommitTrack.containsKey(fileName) && !checkoutTrack.containsKey(fileName)){
+            //five
+            if (!splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName) && checkoutTrack.containsKey(fileName)) {
+                String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
+                createCWDfile(fileName, checkoutCommitContext);
+                add(fileName);
+            }
+            //six
+            if (splitCommitTrack.containsKey(fileName) && currentCommitTrack.containsKey(fileName) && !checkoutTrack.containsKey(fileName)) {
                 String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
                 String splitCommitContext = findObjectBySha1(splitCommitTrack.get(fileName), String.class);
                 if(splitCommitContext.equals(currentCommitContext)){
                     rm(fileName);
                 }
             }
-        }
-
-        /*
-        * Any files that were not present at the split point
-        * and are present only in the given branch should be checked out and staged.
-        * */
-        for(String fileName : checkoutTrack.keySet()){
-            //System.out.println(fileName);
-            if(!splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName)){
-                String context = findObjectBySha1(checkoutTrack.get(fileName),String.class);
-                //currentCommitTrack.put(fileName, checkoutTrack.get(fileName));
-                createCWDfile(fileName,context);
-                add(fileName);
-                continue;
-            }
-            if(currentCommitTrack.containsKey(fileName)){
-                String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
+            if (splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName) && checkoutTrack.containsKey(fileName)) {
+                String splitCommitContext = findObjectBySha1(splitCommitTrack.get(fileName), String.class);
                 String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
-                if(!checkoutCommitContext.equals(currentCommitContext)){
+                if(splitCommitContext.equals(checkoutCommitContext)){
+                    continue;
+                }
+            }
+            //eight
+            if(splitCommitTrack.containsKey(fileName)){
+                if(currentCommitTrack.containsKey(fileName) && checkoutTrack.containsKey(fileName)){
+                    String checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
+                    String currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
+                    if(!checkoutCommitContext.equals(currentCommitContext)){
+                        currentCommitContext = "<<<<<<< HEAD\n"
+                                + currentCommitContext
+                                + "=======\n"
+                                + checkoutCommitContext
+                                + ">>>>>>>\n";
+                        Blob blob = new Blob(currentCommitContext);
+                        blob.createBlob();
+                        currentCommitTrack.put(fileName,sha1(currentCommitContext));
+                        //head.setCommit(currentCommit);
+                        writeObject(HEAD_FILE,head);
+                        createCWDfile(fileName,currentCommitContext);
+                        //System.out.println(currentCommitContext);
+                        flag = false;
+                    }
+                }
+                if(currentCommitTrack.containsKey(fileName) || checkoutTrack.containsKey(fileName)){
+                    String currentCommitContext="",checkoutCommitContext="";
+                    if(currentCommitTrack.containsKey(fileName)){
+                        currentCommitContext = findObjectBySha1(currentCommitTrack.get(fileName), String.class);
+                    }else{
+                        checkoutCommitContext = findObjectBySha1(checkoutTrack.get(fileName), String.class);
+                    }
                     currentCommitContext = "<<<<<<< HEAD\n"
-                                            + currentCommitContext
-                                            + "=======\n"
-                                            + checkoutCommitContext
-                                            + ">>>>>>>";
+                            + currentCommitContext
+                            + "=======\n"
+                            + checkoutCommitContext
+                            + ">>>>>>>\n";
                     Blob blob = new Blob(currentCommitContext);
                     blob.createBlob();
                     currentCommitTrack.put(fileName,sha1(currentCommitContext));
                     //head.setCommit(currentCommit);
                     writeObject(HEAD_FILE,head);
-
                     createCWDfile(fileName,currentCommitContext);
                     //System.out.println(currentCommitContext);
-                    System.out.println("Encountered a merge conflict.");
+                    flag = false;
                 }
+
             }
         }
-        commitMerge(String.format("Merged %s into %s.", branchName,currentBranch.getName()),checkoutCommit);
+        if(!flag){
+            System.out.println("Encountered a merge conflict.");
+        }
+        commitMerge(String.format("Merged %s into %s.", branchName, currentBranch.getName()), checkoutCommit);
     }
 
     public static void commitMerge(String message,Commit checkoutCommit){
-        //if message is blank
-        if(message.equals("")){
-            System.out.println("Please enter a commit message.");
-            return;
-        }
-        //if stage_file is not exist
-        if(!Stage_File.exists()){
-            System.out.println("No changes added to the commit.");
-            return;
-        }
         //read stage_file to create stage class
         Stage stage = readObject(Stage_File, Stage.class);
 
