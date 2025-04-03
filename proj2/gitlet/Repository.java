@@ -197,6 +197,7 @@ public class Repository {
             branch.setCommit_sha1(sha1(commit.toString()));
             //change branch
             branch.createBranch();
+            head.setBranch_sha1(sha1(branch.toString()));
         }
         //change head
         head.setCommit_sha1(sha1(commit.toString()));
@@ -244,7 +245,7 @@ public class Repository {
             System.out.println("===");
             System.out.println("commit " + sha1(commit.toString()));
             if(commit.getMerge_message()!=null){
-                System.out.println("Merge: " +  commit.getMerge_message());
+                System.out.println(commit.getMerge_message());
             }
             System.out.println("Date: " + commit.getDate());
             System.out.println(commit.getMessage());
@@ -482,6 +483,8 @@ public class Repository {
         }
         File f = join(REFSHEADS_DIR,branchName);
         f.delete();
+        log.getBranch_blobs().remove(branchName);
+        log.createLog();
     }
 
     public static void resetByCommitId(String commitId) {
@@ -589,6 +592,7 @@ public class Repository {
 
         TreeMap<String, String> splitCommitTrack = split_commit.getTrack();
         TreeMap<String, String> currentCommitTrack = currentCommit.getTrack();
+
         /*
         * if a file is modified in the given branch
         * since the split point this means the version of the file
@@ -619,7 +623,7 @@ public class Repository {
         * */
         for(String fileName : checkoutTrack.keySet()){
             if(!splitCommitTrack.containsKey(fileName) && !currentCommitTrack.containsKey(fileName)){
-                String context = checkoutTrack.get(fileName);
+                String context = findObjectBySha1(checkoutTrack.get(fileName),String.class);
                 createCWDfile(fileName,context);
                 add(fileName);
             }
@@ -670,6 +674,10 @@ public class Repository {
 
         //create commit class
         Commit commit = new Commit(message,new Date(),stage,track,head.getBranch_sha1());
+        String merge_message = String.format("Merge: %s %s",
+                sha1(parent_commit.toString()).substring(0,7),
+                sha1(checkoutCommit.toString()).substring(0,7));
+        commit.setMerge_message(merge_message);
         commit.getParent_sha1().add(sha1(parent_commit.toString()));
         commit.getParent_sha1().add(sha1(checkoutCommit.toString()));
         commit.setSha1();
@@ -696,7 +704,7 @@ public class Repository {
         queue.offer(commitA);
         while(!queue.isEmpty()){
             Commit commit = queue.poll();
-            visited.add(sha1(commit));
+            visited.add(sha1(commit.toString()));
             commit.restoreCommit();
             queue.addAll(commit.getParent());
         }
@@ -704,7 +712,7 @@ public class Repository {
         while(!queue.isEmpty()){
             Commit commit = queue.poll();
             commit.restoreCommit();
-            if(visited.contains(sha1(commit))){
+            if(visited.contains(sha1(commit.toString()))){
                 return commit;
             }
             queue.addAll(commit.getParent());
