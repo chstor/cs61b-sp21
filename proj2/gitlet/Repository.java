@@ -217,7 +217,6 @@ public class Repository {
         }
         if(stage.getBlobs().containsKey(fileName)) {
             stage.getBlobs().remove(fileName);
-            stage.getRmblobs().add(fileName);
             writeObject(Stage_File,stage);
             return;
         }
@@ -324,7 +323,7 @@ public class Repository {
         List<String> fileNames = plainFilenamesIn(CWD);
         System.out.println("=== Removed Files ===");
         for(String fileName : stage.getRmblobs()){
-            if(fileNames.contains(fileName)){
+            if(!fileNames.contains(fileName)){
                 System.out.println(fileName);
             }
         }
@@ -333,9 +332,7 @@ public class Repository {
         System.out.println("=== Modifications Not Staged For Commit ===");
         for(String fileName : trackFiles){
             if(!fileNames.contains(fileName)){
-                if(!stage.getRmblobs().contains(fileName)){
-                    System.out.println(fileName + "(deleted)");
-                }
+                System.out.println(fileName + "(deleted)");
             }else{
                 File f = join(CWD,fileName);
                 String context = readContentsAsString(f);
